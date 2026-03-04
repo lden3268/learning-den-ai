@@ -775,146 +775,142 @@ function generatePDF(resultsData, studentId, grade, dateStr, subject, studentNam
   const {jsPDF} = window.jspdf;
   const pdf = new jsPDF({orientation:'portrait', unit:'mm', format:'a4'});
   const M=16, W=178, PW=210, PH=297;
-  const HEADER_H = 52;
+  const HEADER_H = 28;
+  const CONTENT_START = HEADER_H + 8;
   const FOOTER_Y = 284;
-  const CONTENT_START = HEADER_H + 6;
 
-  const BG=[202,235,252], NV=[30,58,95], GD=[201,148,58], WH=[255,255,255], TX=[15,35,65], MB=[65,120,175];
+  // Colors
+  const BG  = [202, 235, 252]; // sky blue
+  const NV  = [30,  58,  95];  // navy
+  const GD  = [201, 148, 58];  // gold
+  const WH  = [255, 255, 255];
+  const TX  = [20,  40,  70];
+  const MB  = [65,  120, 175]; // medium blue for section bars
+  const BLK = [15,  15,  15];  // near black for title
 
-  function strip(t){ return (t||'').replace(/\*\*\*/g,'').replace(/\*\*/g,'').replace(/\*/g,'').replace(/^---+$/gm,'').trim(); }
+  function strip(t){ return (t||'').replace(/\*\*\*/g,'').replace(/\*\*/g,'').replace(/\*/g,'').replace(/^---+$/gm,'').replace(/---REVISION CHECKLIST---/gi,'').trim(); }
 
-  // Fix grade label
   let gradeLabel = '';
-  if(grade==='olevel'||grade==='O Level'){ gradeLabel='O Level'; }
-  else if(grade==='grade1-8'||grade==='Grade grade1-8'){ gradeLabel='Grade 1-8'; }
-  else { gradeLabel = isNaN(parseInt(grade)) ? grade : 'Grade '+grade; }
+  if(grade==='olevel'||grade==='O Level') gradeLabel='O Level';
+  else if(grade==='grade1-8'||grade==='Grade grade1-8'||grade==='1-8') gradeLabel='Grade 1-8';
+  else gradeLabel = isNaN(parseInt(grade)) ? grade : 'Grade '+grade;
 
-  // Fix name display - don't show ID twice
-  const nameDisplay = (studentName && studentName !== studentId && studentName.trim() !== '') ? studentName + '  (' + studentId + ')' : studentId;
+  const nameDisplay = (studentName && studentName !== studentId && studentName.trim()!=='') ? studentName+' ('+studentId+')' : studentId;
 
   function drawHeader(){
-    pdf.setFillColor(...NV);
-    pdf.rect(0, 0, PW, 5, 'F');
+    // Entire header is sky blue — no dark strip at top
     pdf.setFillColor(...BG);
-    pdf.rect(0, 5, PW, HEADER_H - 5, 'F');
+    pdf.rect(0, 0, PW, HEADER_H, 'F');
+    // Gold bottom border line only
     pdf.setFillColor(...GD);
-    pdf.rect(0, HEADER_H, PW, 2, 'F');
+    pdf.rect(0, HEADER_H, PW, 1.5, 'F');
+    // White content area
     pdf.setFillColor(...WH);
-    pdf.rect(0, HEADER_H+2, PW, PH-(HEADER_H+2), 'F');
+    pdf.rect(0, HEADER_H+1.5, PW, PH-(HEADER_H+1.5), 'F');
 
-    pdf.setFontSize(22); pdf.setFont('helvetica','bold'); pdf.setTextColor(...NV);
-    pdf.text('Learning DEN AI', PW/2, 18, {align:'center'});
-    pdf.setFontSize(8.5); pdf.setFont('helvetica','normal'); pdf.setTextColor(...GD);
-    pdf.text('LEARN  ·  EVOLVE  ·  WIN  ·  EST. 2011', PW/2, 26, {align:'center'});
-    pdf.setDrawColor(...NV); pdf.setLineWidth(0.3);
-    pdf.line(M+20, 30, PW-M-20, 30);
-    pdf.setFontSize(9); pdf.setFont('helvetica','bold'); pdf.setTextColor(...NV);
-    pdf.text(nameDisplay, PW/2, 37, {align:'center'});
-    pdf.setFontSize(8.5); pdf.setFont('helvetica','normal'); pdf.setTextColor(80,110,150);
-    const infoLine = gradeLabel + '  |  ' + (subject||'General') + (chapter ? '  |  ' + chapter : '');
-    pdf.text(infoLine, PW/2, 44, {align:'center'});
+    // Title — black, centered, compact
+    pdf.setFontSize(14);
+    pdf.setFont('helvetica','bold');
+    pdf.setTextColor(...BLK);
+    pdf.text('Learning DEN AI', PW/2, 10, {align:'center'});
+
+    // One info line — all on one row
+    pdf.setFontSize(7.5);
+    pdf.setFont('helvetica','normal');
+    pdf.setTextColor(70, 100, 140);
+    const info = nameDisplay + '   |   ' + gradeLabel + '   |   ' + (subject||'') + (chapter ? '   |   '+chapter : '') + '   |   ' + dateStr;
+    pdf.text(info, PW/2, 19, {align:'center'});
   }
 
   function drawFooter(pageNum, total){
-    // Footer ONLY at the very bottom
     pdf.setFillColor(...BG);
     pdf.rect(0, FOOTER_Y, PW, PH-FOOTER_Y, 'F');
     pdf.setFillColor(...NV);
-    pdf.rect(0, FOOTER_Y, PW, 1.2, 'F');
-    pdf.setFontSize(7.5); pdf.setFont('helvetica','normal'); pdf.setTextColor(80,110,150);
-    pdf.text('Learning DEN AI  ·  Confidential Student Material', M, FOOTER_Y+7);
-    pdf.text('Page '+pageNum+' / '+total, PW-M, FOOTER_Y+7, {align:'right'});
+    pdf.rect(0, FOOTER_Y, PW, 0.8, 'F');
+    pdf.setFontSize(7);
+    pdf.setFont('helvetica','normal');
+    pdf.setTextColor(80,110,150);
+    pdf.text('Learning DEN AI  ·  Confidential Student Material', M, FOOTER_Y+6);
+    pdf.text('Page '+pageNum+' / '+total, PW-M, FOOTER_Y+6, {align:'right'});
   }
 
-  // ── RENDER ALL CONTENT — NO forced page breaks per section
-  // Instead: flow content naturally, only break when page is full
-  let pageNum = 1;
   let y = CONTENT_START;
 
-  function checkNewPage(neededHeight){
-    if(y + neededHeight > FOOTER_Y - 4){
+  function checkPage(need){
+    if(y + need > FOOTER_Y - 6){
       pdf.addPage();
-      pageNum++;
       drawHeader();
       y = CONTENT_START;
     }
   }
 
-  function writeLine(text, fontSize, fontStyle, r, g, b, indent){
-    indent = indent || 0;
-    pdf.setFontSize(fontSize);
-    pdf.setFont('helvetica', fontStyle);
-    pdf.setTextColor(r, g, b);
-    const maxW = W - 6 - indent;
-    const wrapped = pdf.splitTextToSize(text, maxW);
+  function writeLine(text, fs, style, r, g, b, indent){
+    indent = indent||0;
+    pdf.setFontSize(fs);
+    pdf.setFont('helvetica', style);
+    pdf.setTextColor(r,g,b);
+    const wrapped = pdf.splitTextToSize(text, W-6-indent);
     wrapped.forEach(wl => {
-      checkNewPage(fontSize * 0.45);
-      pdf.text(wl, M + 4 + indent, y);
-      y += fontSize * 0.42;
+      checkPage(fs*0.45);
+      pdf.text(wl, M+4+indent, y);
+      y += fs*0.42;
     });
-    y += 1.5;
+    y += 1.2;
   }
 
-  function writeSection(secTitle, secNum, content){
-    const cleaned = strip(content);
+  function writeSection(title, num, rawContent){
+    const cleaned = strip(rawContent||'');
     if(!cleaned) return;
 
-    // Section header bar — check space first
-    checkNewPage(14);
+    checkPage(16);
+    // Section bar
     pdf.setFillColor(...MB);
-    pdf.roundedRect(M, y, W, 11, 2, 2, 'F');
-    pdf.setFontSize(10); pdf.setFont('helvetica','bold'); pdf.setTextColor(...WH);
-    pdf.text('( '+secNum+' )   '+secTitle, M+5, y+7.8);
-    y += 15;
+    pdf.roundedRect(M, y, W, 10, 1.5, 1.5, 'F');
+    pdf.setFontSize(9.5);
+    pdf.setFont('helvetica','bold');
+    pdf.setTextColor(...WH);
+    pdf.text('( '+num+' )   '+title, M+5, y+7);
+    y += 14;
 
-    // Content lines
     cleaned.split('\n').forEach(line => {
       line = line.trim();
-      if(!line){ y += 1.5; return; }
-
-      // Strip difficulty tags cleanly
+      if(!line){ y+=1.5; return; }
       const display = line.replace(/\[EASY\]/g,'[Easy]').replace(/\[MEDIUM\]/g,'[Med]').replace(/\[HARD\]/g,'[Hard]');
-
-      if(/^Q\d+:/i.test(line)){
-        writeLine(display, 10, 'bold', ...NV, 0);
-      } else if(/^A\d+:/i.test(line)){
-        writeLine(display, 10, 'normal', 30, 100, 50, 3);
-      } else if(/^I can/i.test(line)){
-        writeLine('✓  '+display, 10, 'normal', 30, 110, 60, 0);
-      } else {
-        writeLine(display, 10, 'normal', ...TX, 0);
-      }
+      if(/^Q\d+:/i.test(line))       writeLine(display, 10, 'bold',   ...NV, 0);
+      else if(/^A\d+:/i.test(line))  writeLine(display, 10, 'normal', 30,100,50, 3);
+      else if(/^I can/i.test(line))  writeLine('✓  '+display, 9.5, 'normal', 30,110,60, 0);
+      else                           writeLine(display, 10, 'normal', ...TX, 0);
     });
     y += 4;
   }
 
-  // Draw first page
+  // Build PDF
   drawHeader();
 
   resultsData.forEach((item, i) => {
     if(!item) return;
 
-    // Image title bar
-    checkNewPage(14);
+    checkPage(14);
     pdf.setFillColor(...NV);
-    pdf.roundedRect(M, y, W, 10, 2, 2, 'F');
-    pdf.setFontSize(10); pdf.setFont('helvetica','bold'); pdf.setTextColor(...WH);
-    pdf.text('Image '+(i+1)+':  '+(item.name||''), M+4, y+7);
-    y += 15;
+    pdf.roundedRect(M, y, W, 9, 1.5, 1.5, 'F');
+    pdf.setFontSize(9.5);
+    pdf.setFont('helvetica','bold');
+    pdf.setTextColor(...WH);
+    pdf.text('Image '+(i+1)+':  '+(item.name||''), M+4, y+6.5);
+    y += 13;
 
-    const sections = [
+    [
       {title:'KEY POINTS',         num:'1', content:item.keypoints},
       {title:'SUMMARY NOTES',      num:'2', content:item.summary},
       {title:'EXAM Q & A',         num:'3', content:item.qanda},
       {title:'FILL IN THE BLANKS', num:'4', content:item.fillblanks},
       {title:'ADDITIONAL NOTES',   num:'5', content:item.additional},
       {title:'REVISION CHECKLIST', num:'6', content:item.checklist},
-    ];
-    sections.forEach(sec => writeSection(sec.title, sec.num, sec.content||''));
+    ].forEach(s => writeSection(s.title, s.num, s.content||''));
+
     y += 6;
   });
 
-  // Page numbers on all pages
   const total = pdf.getNumberOfPages();
   for(let p=1; p<=total; p++){
     pdf.setPage(p);
@@ -1255,7 +1251,7 @@ function parseResult(text){
   const sn  = text.match(/---SUMMARY NOTES---([\s\S]*?)(?=---EXAM Q&A---|---FILL IN THE BLANKS---|---ADDITIONAL NOTES---|$)/i);
   const qa  = text.match(/---EXAM Q&A---([\s\S]*?)(?=---FILL IN THE BLANKS---|---ADDITIONAL NOTES---|$)/i);
   const fb  = text.match(/---FILL IN THE BLANKS---([\s\S]*?)(?=---ADDITIONAL NOTES---|$)/i);
-  const add = text.match(/---ADDITIONAL NOTES---([\s\S]*?)$/i);
+  const add = text.match(/---ADDITIONAL NOTES---([\s\S]*?)(?=---REVISION CHECKLIST---|$)/i);
   if(!kp && !sn && !qa) return {keypoints:text.trim(),summary:'',qanda:'',fillblanks:'',additional:''};
   const ch = text.match(/---REVISION CHECKLIST---([\s\S]*?)$/i);
   return {
