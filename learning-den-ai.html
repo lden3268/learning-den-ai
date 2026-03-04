@@ -725,197 +725,153 @@ function downloadHistoryPdf(idx){
 function generatePDF(resultsData, studentId, grade, dateStr, subject, studentName, chapter){
   const {jsPDF} = window.jspdf;
   const pdf = new jsPDF({orientation:'portrait', unit:'mm', format:'a4'});
-  const M = 16, W = 178, PW = 210, PH = 297;
+  const M=16, W=178, PW=210, PH=297;
+  const HEADER_H = 52;
+  const FOOTER_Y = 284;
+  const CONTENT_START = HEADER_H + 6;
 
-  // ── COLORS ──────────────────────────────────────────
-  // Light blue background: rgb(202,235,252)
-  const BG  = [202, 235, 252];
-  // Navy text/accent: rgb(30,58,95)
-  const NV  = [30, 58, 95];
-  // Gold accent: rgb(201,148,58)
-  const GD  = [201, 148, 58];
-  // White
-  const WH  = [255,255,255];
-  // Dark text
-  const TX  = [15, 35, 65];
-  // Medium blue for section headers
-  const MB  = [65, 120, 175];
+  const BG=[202,235,252], NV=[30,58,95], GD=[201,148,58], WH=[255,255,255], TX=[15,35,65], MB=[65,120,175];
 
-  function strip(t){
-    return (t||'').replace(/\*\*\*/g,'').replace(/\*\*/g,'').replace(/\*/g,'').replace(/^---+$/gm,'').trim();
-  }
+  function strip(t){ return (t||'').replace(/\*\*\*/g,'').replace(/\*\*/g,'').replace(/\*/g,'').replace(/^---+$/gm,'').trim(); }
 
-  const gradeLabel = (grade==='olevel'||grade==='O Level') ? 'O Level' : 'Grade ' + grade;
-  const nameDisplay = (studentName && studentName !== studentId) ? studentName : studentId;
+  // Fix grade label
+  let gradeLabel = '';
+  if(grade==='olevel'||grade==='O Level'){ gradeLabel='O Level'; }
+  else if(grade==='grade1-8'||grade==='Grade grade1-8'){ gradeLabel='Grade 1-8'; }
+  else { gradeLabel = isNaN(parseInt(grade)) ? grade : 'Grade '+grade; }
 
-  // ── DRAW HEADER ──────────────────────────────────────
+  // Fix name display - don't show ID twice
+  const nameDisplay = (studentName && studentName !== studentId && studentName.trim() !== '') ? studentName + '  (' + studentId + ')' : studentId;
+
   function drawHeader(){
-    // Light blue full background for header area
-    pdf.setFillColor(...BG);
-    pdf.rect(0, 0, PW, 52, 'F');
-
-    // Navy top strip (thin)
     pdf.setFillColor(...NV);
-    pdf.rect(0, 0, PW, 6, 'F');
-
-    // Gold accent line at bottom of header
+    pdf.rect(0, 0, PW, 5, 'F');
+    pdf.setFillColor(...BG);
+    pdf.rect(0, 5, PW, HEADER_H - 5, 'F');
     pdf.setFillColor(...GD);
-    pdf.rect(0, 52, PW, 2, 'F');
-
-    // White content area below
+    pdf.rect(0, HEADER_H, PW, 2, 'F');
     pdf.setFillColor(...WH);
-    pdf.rect(0, 54, PW, PH - 54, 'F');
+    pdf.rect(0, HEADER_H+2, PW, PH-(HEADER_H+2), 'F');
 
-    // Title — centered, navy color
-    pdf.setFontSize(22);
-    pdf.setFont('helvetica', 'bold');
-    pdf.setTextColor(...NV);
-    pdf.text('Learning DEN AI', PW/2, 20, {align:'center'});
-
-    // Tagline — centered, gold
-    pdf.setFontSize(8.5);
-    pdf.setFont('helvetica', 'normal');
-    pdf.setTextColor(...GD);
-    pdf.text('LEARN  ·  EVOLVE  ·  WIN  ·  EST. 2011', PW/2, 28, {align:'center'});
-
-    // Divider line
-    pdf.setDrawColor(...NV);
-    pdf.setLineWidth(0.3);
-    pdf.line(M + 20, 32, PW - M - 20, 32);
-
-    // Student info row — 3 columns centered
-    pdf.setFontSize(8.5);
-    pdf.setFont('helvetica', 'bold');
-    pdf.setTextColor(...NV);
-    pdf.text(nameDisplay + '  (' + studentId + ')', PW/2, 39, {align:'center'});
-
-    pdf.setFont('helvetica', 'normal');
-    pdf.setTextColor(80, 110, 150);
+    pdf.setFontSize(22); pdf.setFont('helvetica','bold'); pdf.setTextColor(...NV);
+    pdf.text('Learning DEN AI', PW/2, 18, {align:'center'});
+    pdf.setFontSize(8.5); pdf.setFont('helvetica','normal'); pdf.setTextColor(...GD);
+    pdf.text('LEARN  ·  EVOLVE  ·  WIN  ·  EST. 2011', PW/2, 26, {align:'center'});
+    pdf.setDrawColor(...NV); pdf.setLineWidth(0.3);
+    pdf.line(M+20, 30, PW-M-20, 30);
+    pdf.setFontSize(9); pdf.setFont('helvetica','bold'); pdf.setTextColor(...NV);
+    pdf.text(nameDisplay, PW/2, 37, {align:'center'});
+    pdf.setFontSize(8.5); pdf.setFont('helvetica','normal'); pdf.setTextColor(80,110,150);
     const infoLine = gradeLabel + '  |  ' + (subject||'General') + (chapter ? '  |  ' + chapter : '');
-    pdf.text(infoLine, PW/2, 46, {align:'center'});
+    pdf.text(infoLine, PW/2, 44, {align:'center'});
   }
 
-  // ── DRAW FOOTER ──────────────────────────────────────
   function drawFooter(pageNum, total){
+    // Footer ONLY at the very bottom
     pdf.setFillColor(...BG);
-    pdf.rect(0, PH - 12, PW, 12, 'F');
+    pdf.rect(0, FOOTER_Y, PW, PH-FOOTER_Y, 'F');
     pdf.setFillColor(...NV);
-    pdf.rect(0, PH - 12, PW, 1.5, 'F');
-
-    pdf.setFontSize(7.5);
-    pdf.setFont('helvetica', 'normal');
-    pdf.setTextColor(80, 110, 150);
-    pdf.text('Learning DEN AI  ·  Confidential Student Material', M, PH - 4);
-    pdf.text('Page ' + pageNum + ' / ' + total, PW - M, PH - 4, {align:'right'});
+    pdf.rect(0, FOOTER_Y, PW, 1.2, 'F');
+    pdf.setFontSize(7.5); pdf.setFont('helvetica','normal'); pdf.setTextColor(80,110,150);
+    pdf.text('Learning DEN AI  ·  Confidential Student Material', M, FOOTER_Y+7);
+    pdf.text('Page '+pageNum+' / '+total, PW-M, FOOTER_Y+7, {align:'right'});
   }
 
-  // ── SECTION PAGE ─────────────────────────────────────
-  function sectionPageContent(secTitle, secNum, imageNum, imageName, textContent, showImageLabel){
-    const cleaned = strip(textContent);
+  // ── RENDER ALL CONTENT — NO forced page breaks per section
+  // Instead: flow content naturally, only break when page is full
+  let pageNum = 1;
+  let y = CONTENT_START;
+
+  function checkNewPage(neededHeight){
+    if(y + neededHeight > FOOTER_Y - 4){
+      pdf.addPage();
+      pageNum++;
+      drawHeader();
+      y = CONTENT_START;
+    }
+  }
+
+  function writeLine(text, fontSize, fontStyle, r, g, b, indent){
+    indent = indent || 0;
+    pdf.setFontSize(fontSize);
+    pdf.setFont('helvetica', fontStyle);
+    pdf.setTextColor(r, g, b);
+    const maxW = W - 6 - indent;
+    const wrapped = pdf.splitTextToSize(text, maxW);
+    wrapped.forEach(wl => {
+      checkNewPage(fontSize * 0.45);
+      pdf.text(wl, M + 4 + indent, y);
+      y += fontSize * 0.42;
+    });
+    y += 1.5;
+  }
+
+  function writeSection(secTitle, secNum, content){
+    const cleaned = strip(content);
     if(!cleaned) return;
 
-    let y = 60;
-
-    // Image label (only on first section of each image)
-    if(showImageLabel){
-      pdf.setFillColor(...NV);
-      pdf.roundedRect(M, y, W, 10, 2, 2, 'F');
-      pdf.setFontSize(10);
-      pdf.setFont('helvetica', 'bold');
-      pdf.setTextColor(...WH);
-      pdf.text('Image ' + imageNum + ':  ' + imageName, M + 4, y + 7);
-      y += 16;
-    }
-
-    // Section header — medium blue pill
+    // Section header bar — check space first
+    checkNewPage(14);
     pdf.setFillColor(...MB);
     pdf.roundedRect(M, y, W, 11, 2, 2, 'F');
-    pdf.setFontSize(10);
-    pdf.setFont('helvetica', 'bold');
-    pdf.setTextColor(...WH);
-    pdf.text('( ' + secNum + ' )   ' + secTitle, M + 5, y + 7.8);
-    y += 18;
+    pdf.setFontSize(10); pdf.setFont('helvetica','bold'); pdf.setTextColor(...WH);
+    pdf.text('( '+secNum+' )   '+secTitle, M+5, y+7.8);
+    y += 15;
 
-    // Content text
-    pdf.setFontSize(10);
-    pdf.setFont('helvetica', 'normal');
-    pdf.setTextColor(...TX);
-
-    const lines = cleaned.split('\n');
-    lines.forEach(line => {
+    // Content lines
+    cleaned.split('\n').forEach(line => {
       line = line.trim();
-      if(!line){ y += 2; return; }
+      if(!line){ y += 1.5; return; }
 
-      // Q lines bold navy
+      // Strip difficulty tags cleanly
+      const display = line.replace(/\[EASY\]/g,'[Easy]').replace(/\[MEDIUM\]/g,'[Med]').replace(/\[HARD\]/g,'[Hard]');
+
       if(/^Q\d+:/i.test(line)){
-        pdf.setFont('helvetica','bold');
-        pdf.setTextColor(...NV);
+        writeLine(display, 10, 'bold', ...NV, 0);
       } else if(/^A\d+:/i.test(line)){
-        pdf.setFont('helvetica','normal');
-        pdf.setTextColor(40, 80, 40);
-      } else if(/^\[HARD\]/.test(line)){
-        pdf.setFont('helvetica','normal');
-        pdf.setTextColor(180, 40, 40);
+        writeLine(display, 10, 'normal', 30, 100, 50, 3);
       } else if(/^I can/i.test(line)){
-        pdf.setFont('helvetica','normal');
-        pdf.setTextColor(30, 100, 60);
+        writeLine('✓  '+display, 10, 'normal', 30, 110, 60, 0);
       } else {
-        pdf.setFont('helvetica','normal');
-        pdf.setTextColor(...TX);
+        writeLine(display, 10, 'normal', ...TX, 0);
       }
-
-      // Strip difficulty tags for PDF
-      line = line.replace(/\[EASY\]/g,'✓').replace(/\[MEDIUM\]/g,'~').replace(/\[HARD\]/g,'★');
-
-      const wrapped = pdf.splitTextToSize(line, W - 6);
-      wrapped.forEach(wl => {
-        if(y > PH - 18){
-          pdf.addPage();
-          drawHeader();
-          y = 60;
-        }
-        pdf.text(wl, M + 4, y);
-        y += 5.8;
-      });
-      y += 1.5;
     });
+    y += 4;
   }
 
-  // ── BUILD PDF ─────────────────────────────────────────
-  // Draw header on very first page
+  // Draw first page
   drawHeader();
-  let firstSection = true;
 
   resultsData.forEach((item, i) => {
     if(!item) return;
 
+    // Image title bar
+    checkNewPage(14);
+    pdf.setFillColor(...NV);
+    pdf.roundedRect(M, y, W, 10, 2, 2, 'F');
+    pdf.setFontSize(10); pdf.setFont('helvetica','bold'); pdf.setTextColor(...WH);
+    pdf.text('Image '+(i+1)+':  '+(item.name||''), M+4, y+7);
+    y += 15;
+
     const sections = [
-      { title:'KEY POINTS',         num:'1', content: item.keypoints  },
-      { title:'SUMMARY NOTES',      num:'2', content: item.summary    },
-      { title:'EXAM Q & A',         num:'3', content: item.qanda      },
-      { title:'FILL IN THE BLANKS', num:'4', content: item.fillblanks },
-      { title:'ADDITIONAL NOTES',   num:'5', content: item.additional },
-      { title:'REVISION CHECKLIST', num:'6', content: item.checklist  },
-    ].filter(s => strip(s.content||'').length > 0);
-
-    if(!sections.length) return;
-
-    sections.forEach((sec, si) => {
-      const isVeryFirst = firstSection && si===0;
-      if(!isVeryFirst){ pdf.addPage(); drawHeader(); }
-      if(isVeryFirst) firstSection = false;
-      sectionPageContent(sec.title, sec.num, i+1, item.name||'', sec.content, sec.num==='1');
-    });
+      {title:'KEY POINTS',         num:'1', content:item.keypoints},
+      {title:'SUMMARY NOTES',      num:'2', content:item.summary},
+      {title:'EXAM Q & A',         num:'3', content:item.qanda},
+      {title:'FILL IN THE BLANKS', num:'4', content:item.fillblanks},
+      {title:'ADDITIONAL NOTES',   num:'5', content:item.additional},
+      {title:'REVISION CHECKLIST', num:'6', content:item.checklist},
+    ];
+    sections.forEach(sec => writeSection(sec.title, sec.num, sec.content||''));
+    y += 6;
   });
 
-  // Page numbers
+  // Page numbers on all pages
   const total = pdf.getNumberOfPages();
-  for(let p = 1; p <= total; p++){
+  for(let p=1; p<=total; p++){
     pdf.setPage(p);
     drawFooter(p, total);
   }
-
-  pdf.save('LearningDEN_' + studentId + '_' + Date.now() + '.pdf');
+  pdf.save('LearningDEN_'+studentId+'_'+Date.now()+'.pdf');
 }
 
 // ── UPLOAD ───────────────────────────────────────────────
