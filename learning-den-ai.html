@@ -649,31 +649,17 @@ function generatePDF(resultsData, studentId, grade, dateStr, subject){
 
   function strip(t){ return (t||'').replace(/\*\*\*/g,'').replace(/\*\*/g,'').replace(/\*/g,'').replace(/^---+$/gm,'').trim(); }
 
-  // Convert logo via canvas - fitted inside header
-  let logoSrc = null;
-  try {
-    const logoEl = document.querySelector('.logo-img');
-    if(logoEl && logoEl.complete){
-      const canvas = document.createElement('canvas');
-      canvas.width = 80; canvas.height = 80;
-      const ctx = canvas.getContext('2d');
-      ctx.drawImage(logoEl, 0, 0, 80, 80);
-      logoSrc = canvas.toDataURL('image/png');
-    }
-  } catch(e){ logoSrc = null; }
-
   function drawHeader(){
     pdf.setFillColor(NR, NG, NB);
     pdf.rect(0, 0, 210, 44, 'F');
     pdf.setFillColor(GR, GG, GB);
     pdf.rect(0, 44, 210, 2, 'F');
-    // Logo - contained within header height (max 36px tall, right aligned)
-    if(logoSrc){ try{ pdf.addImage(logoSrc, 'PNG', 172, 4, 30, 30); }catch(e){} }
+    // Centered title
     pdf.setFontSize(21); pdf.setFont('helvetica','bold'); pdf.setTextColor(GR,GG,GB);
-    pdf.text('Learning DEN AI', M, 17);
+    pdf.text('Learning DEN AI', 105, 17, {align:'center'});
     pdf.setFontSize(9); pdf.setFont('helvetica','normal'); pdf.setTextColor(180,205,235);
-    pdf.text('Learn \u00B7 Evolve \u00B7 Win \u00B7 Est. 2011', M, 26);
-    pdf.text('Student: '+studentId+'  |  '+(grade==='olevel'?'O Level':'Grade 1-8')+'  |  '+dateStr, M, 35);
+    pdf.text('Learn \u00B7 Evolve \u00B7 Win \u00B7 Est. 2011', 105, 26, {align:'center'});
+    pdf.text('Student: '+studentId+'  |  '+(grade==='olevel'?'O Level':'Grade 1-8')+'  |  '+dateStr, 105, 35, {align:'center'});
   }
 
   function drawFooter(pageNum, total){
@@ -685,44 +671,9 @@ function generatePDF(resultsData, studentId, grade, dateStr, subject){
     pdf.text('Page '+pageNum+' of '+total, 210-M, 291, {align:'right'});
   }
 
-  function addSectionPage(sectionTitle, sectionNum, imageName, imageNum, cleaned){
-    if(!cleaned || !cleaned.trim()) return;
-    pdf.addPage();
-    drawHeader();
-    let y = 52;
+  // NO blank first page — go straight into content
+  let firstPage = true;
 
-    // Section title bar
-    pdf.setFillColor(NR,NG,NB);
-    pdf.roundedRect(M, y, W, 12, 2, 2, 'F');
-    pdf.setFontSize(11); pdf.setFont('helvetica','bold'); pdf.setTextColor(GR,GG,GB);
-    pdf.text('('+sectionNum+')  '+sectionTitle, M+4, y+8.5);
-    y += 17;
-
-    // Small image reference
-    pdf.setFontSize(9); pdf.setFont('helvetica','italic'); pdf.setTextColor(120,140,170);
-    pdf.text('Image '+imageNum+': '+imageName, M+2, y);
-    y += 9;
-
-    // Content
-    pdf.setFontSize(10.5); pdf.setFont('helvetica','normal'); pdf.setTextColor(15,35,65);
-    const rawLines = cleaned.split('\n');
-    rawLines.forEach(line => {
-      line = line.trim();
-      if(!line){ y += 2; return; }
-      const wrapped = pdf.splitTextToSize(line, W-4);
-      wrapped.forEach(wl => {
-        if(y > 278){ pdf.addPage(); drawHeader(); y = 52; }
-        pdf.text(wl, M+3, y);
-        y += 6;
-      });
-      y += 1.5;
-    });
-  }
-
-  // Page 1
-  drawHeader();
-
-  // All images - image title + sections
   resultsData.forEach((item, i) => {
     if(!item) return;
 
@@ -732,21 +683,26 @@ function generatePDF(resultsData, studentId, grade, dateStr, subject){
       { title:'EXAM Q & A',         num:'3', content: item.qanda      },
       { title:'FILL IN THE BLANKS', num:'4', content: item.fillblanks },
       { title:'ADDITIONAL NOTES',   num:'5', content: item.additional },
-    ].filter(s => strip(s.content));
+    ].filter(s => strip(s.content).length > 0);
 
     if(!sections.length) return;
 
-    // Image title goes on the SAME page as first section, not alone
-    // First section page gets the image title embedded above section bar
     sections.forEach((sec, si) => {
       const cleaned = strip(sec.content);
       if(!cleaned) return;
 
-      pdf.addPage();
-      drawHeader();
+      // New page for every section EXCEPT the very first section of the whole doc
+      if(firstPage){
+        firstPage = false;
+        drawHeader();
+      } else {
+        pdf.addPage();
+        drawHeader();
+      }
+
       let y = 52;
 
-      // On first section of each image, show image title above
+      // Image title only on first section of each image
       if(si === 0){
         pdf.setFillColor(NR, NG, NB);
         pdf.rect(M, y, W, 11, 'F');
@@ -755,7 +711,7 @@ function generatePDF(resultsData, studentId, grade, dateStr, subject){
         y += 16;
       }
 
-      // Section title bar
+      // Section title bar (slightly lighter blue)
       pdf.setFillColor(50, 90, 140);
       pdf.roundedRect(M, y, W, 12, 2, 2, 'F');
       pdf.setFontSize(11); pdf.setFont('helvetica','bold'); pdf.setTextColor(GR,GG,GB);
