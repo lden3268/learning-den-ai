@@ -641,44 +641,130 @@ function downloadHistoryPdf(idx){
 
 // ── PDF ──────────────────────────────────────────────────
 function generatePDF(resultsData, studentId, grade, dateStr, subject){
-  const {jsPDF}=window.jspdf;
-  const pdf=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
-  const margin=20,contentW=170;
-  let y=20;
-  function checkPage(n){if(y+n>275){pdf.addPage();y=20;}}
-  function addText(text,fs,bold,color,w){
-    pdf.setFontSize(fs);pdf.setFont('helvetica',bold?'bold':'normal');
-    pdf.setTextColor(color[0],color[1],color[2]);
-    const lines=pdf.splitTextToSize(String(text||''),w||contentW);
-    checkPage(lines.length*(fs*0.42)+3);
-    pdf.text(lines,margin,y);
-    y+=lines.length*(fs*0.42)+3;
+  const {jsPDF} = window.jspdf;
+  const pdf = new jsPDF({orientation:'portrait', unit:'mm', format:'a4'});
+  const M = 18, W = 174;
+
+  // EXACT match to page color #1e3a5f
+  const NR=30, NG=58, NB=95;
+  const GR=201, GG=148, GB=58;
+
+  function strip(t){ return (t||'').replace(/\*\*\*/g,'').replace(/\*\*/g,'').replace(/\*/g,'').replace(/^---+$/gm,'').trim(); }
+
+  // Convert logo to canvas-based PNG for reliable jsPDF embedding
+  let logoSrc = null;
+  try {
+    const logoEl = document.querySelector('.logo-img');
+    if(logoEl && logoEl.src){
+      const canvas = document.createElement('canvas');
+      canvas.width = 100; canvas.height = 100;
+      const ctx = canvas.getContext('2d');
+      ctx.beginPath(); ctx.arc(50,50,50,0,Math.PI*2); ctx.clip();
+      ctx.drawImage(logoEl, 0, 0, 100, 100);
+      logoSrc = canvas.toDataURL('image/png');
+    }
+  } catch(e){ logoSrc = null; }
+
+  function drawHeader(){
+    // Full-width navy header matching #1e3a5f exactly
+    pdf.setFillColor(NR, NG, NB);
+    pdf.rect(0, 0, 210, 46, 'F');
+    // Gold bottom border line
+    pdf.setFillColor(GR, GG, GB);
+    pdf.rect(0, 46, 210, 2, 'F');
+    // Logo top-right
+    if(logoSrc){ try{ pdf.addImage(logoSrc,'PNG',168,5,34,34); }catch(e){ console.log('logo err',e); } }
+    // Title text
+    pdf.setFontSize(21); pdf.setFont('helvetica','bold'); pdf.setTextColor(GR,GG,GB);
+    pdf.text('Learning DEN AI', M, 18);
+    pdf.setFontSize(9); pdf.setFont('helvetica','normal'); pdf.setTextColor(180,205,235);
+    pdf.text('Learn \u00B7 Evolve \u00B7 Win \u00B7 Est. 2011', M, 27);
+    pdf.text('Student: '+studentId+'  |  '+(grade==='olevel'?'O Level':'Grade 1-8')+'  |  '+dateStr, M, 36);
   }
-  pdf.setFillColor(26,39,68);pdf.rect(0,0,210,46,'F');
-  pdf.setFontSize(22);pdf.setFont('helvetica','bold');pdf.setTextColor(201,148,58);
-  pdf.text('Learning DEN AI',margin,18);
-  pdf.setFontSize(10);pdf.setFont('helvetica','normal');pdf.setTextColor(170,181,213);
-  pdf.text('Learn · Evolve · Win · Est. 2011',margin,27);
-  pdf.text('Student: '+studentId+'  |  '+(grade==='olevel'?'O Level':'Grade 1-8')+'  |  Subject: '+(subject||'N/A')+'  |  '+dateStr,margin,36);
-  y=58;
-  resultsData.forEach((item,i)=>{
+
+  function drawFooter(pageNum, total){
+    pdf.setDrawColor(GR,GG,GB);
+    pdf.setLineWidth(0.5);
+    pdf.line(M, 285, 210-M, 285);
+    pdf.setFontSize(8); pdf.setFont('helvetica','normal'); pdf.setTextColor(NR,NG,NB);
+    pdf.text('Learning DEN AI  \u00B7  Confidential Study Material', M, 291);
+    pdf.text('Page '+pageNum+' of '+total, 210-M, 291, {align:'right'});
+  }
+
+  // Draw first page header
+  drawHeader();
+
+  resultsData.forEach((item, i) => {
     if(!item) return;
-    checkPage(18);
-    pdf.setFillColor(26,39,68);pdf.rect(margin,y-5,contentW,13,'F');
-    pdf.setFontSize(12);pdf.setFont('helvetica','bold');pdf.setTextColor(255,255,255);
-    pdf.text('Image '+(i+1)+': '+(item.name||''),margin+3,y+3);y+=16;
-    const sections=[['KEY POINTS',item.keypoints],['SUMMARY NOTES',item.summary],['EXAM Q&A',item.qanda],['FILL IN THE BLANKS',item.fillblanks],['ADDITIONAL NOTES',item.additional]];
-    sections.forEach(([title,content])=>{
-      if(!content||content==='N/A'||content==='') return;
-      addText(title,11,true,[26,39,68]);
-      addText(content,10,false,[26,32,48]);y+=3;
+
+    // Each image gets a fresh page (except very first)
+    if(i > 0){ pdf.addPage(); drawHeader(); }
+    let y = 54;
+
+    // Image title bar
+    pdf.setFillColor(NR,NG,NB);
+    pdf.rect(M, y, W, 13, 'F');
+    pdf.setFontSize(12); pdf.setFont('helvetica','bold'); pdf.setTextColor(255,255,255);
+    pdf.text('Image '+(i+1)+': '+(item.name||''), M+4, y+9);
+    y += 20;
+
+    const sections = [
+      { title:'KEY POINTS',        num:'1', content: item.keypoints  },
+      { title:'SUMMARY NOTES',     num:'2', content: item.summary    },
+      { title:'EXAM Q & A',        num:'3', content: item.qanda      },
+      { title:'FILL IN THE BLANKS',num:'4', content: item.fillblanks },
+      { title:'ADDITIONAL NOTES',  num:'5', content: item.additional },
+    ];
+
+    sections.forEach((sec, si) => {
+      const cleaned = strip(sec.content);
+      if(!cleaned) return;
+
+      // Every section starts on a BRAND NEW PAGE with full header
+      pdf.addPage();
+      drawHeader();
+      y = 54;
+
+      // Section title bar
+      pdf.setFillColor(NR,NG,NB);
+      pdf.roundedRect(M, y, W, 12, 2, 2, 'F');
+      pdf.setFontSize(11); pdf.setFont('helvetica','bold'); pdf.setTextColor(GR,GG,GB);
+      pdf.text('('+sec.num+')  '+sec.title, M+4, y+8.5);
+      y += 18;
+
+      // Sub-label: image reference
+      pdf.setFontSize(9); pdf.setFont('helvetica','italic'); pdf.setTextColor(120,140,170);
+      pdf.text('Image '+(i+1)+': '+(item.name||''), M+2, y);
+      y += 8;
+
+      // Content lines
+      pdf.setFontSize(10.5); pdf.setFont('helvetica','normal'); pdf.setTextColor(15,35,65);
+      const rawLines = cleaned.split('\n');
+      rawLines.forEach(line => {
+        line = line.trim();
+        if(!line) { y += 2; return; }
+        const wrapped = pdf.splitTextToSize(line, W-4);
+        wrapped.forEach(wl => {
+          if(y > 278){
+            pdf.addPage(); drawHeader(); y = 54;
+          }
+          // Bold the number prefix like "1." "Q1:" "A1:"
+          pdf.text(wl, M+3, y);
+          y += 6;
+        });
+        y += 1.5;
+      });
     });
-    y+=6;
-    if(i<resultsData.length-1){checkPage(6);pdf.setDrawColor(216,223,240);pdf.line(margin,y,margin+contentW,y);y+=8;}
   });
-  const pages=pdf.getNumberOfPages();
-  for(let p=1;p<=pages;p++){pdf.setPage(p);pdf.setFontSize(9);pdf.setFont('helvetica','normal');pdf.setTextColor(107,122,153);pdf.text('Learning DEN AI  |  Page '+p+' of '+pages,margin,290);}
-  pdf.save('LearningDen_'+studentId+'_'+Date.now()+'.pdf');
+
+  // Add page numbers to all pages
+  const totalPages = pdf.getNumberOfPages();
+  for(let p = 1; p <= totalPages; p++){
+    pdf.setPage(p);
+    drawFooter(p, totalPages);
+  }
+
+  pdf.save('LearningDEN_'+studentId+'_'+Date.now()+'.pdf');
 }
 
 // ── UPLOAD ───────────────────────────────────────────────
