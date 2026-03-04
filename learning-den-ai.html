@@ -644,42 +644,36 @@ function generatePDF(resultsData, studentId, grade, dateStr, subject){
   const {jsPDF} = window.jspdf;
   const pdf = new jsPDF({orientation:'portrait', unit:'mm', format:'a4'});
   const M = 18, W = 174;
-
-  // EXACT match to page color #1e3a5f
   const NR=30, NG=58, NB=95;
   const GR=201, GG=148, GB=58;
 
   function strip(t){ return (t||'').replace(/\*\*\*/g,'').replace(/\*\*/g,'').replace(/\*/g,'').replace(/^---+$/gm,'').trim(); }
 
-  // Convert logo to canvas-based PNG for reliable jsPDF embedding
+  // Convert logo via canvas - fitted inside header
   let logoSrc = null;
   try {
     const logoEl = document.querySelector('.logo-img');
-    if(logoEl && logoEl.src){
+    if(logoEl && logoEl.complete){
       const canvas = document.createElement('canvas');
-      canvas.width = 100; canvas.height = 100;
+      canvas.width = 80; canvas.height = 80;
       const ctx = canvas.getContext('2d');
-      ctx.beginPath(); ctx.arc(50,50,50,0,Math.PI*2); ctx.clip();
-      ctx.drawImage(logoEl, 0, 0, 100, 100);
+      ctx.drawImage(logoEl, 0, 0, 80, 80);
       logoSrc = canvas.toDataURL('image/png');
     }
   } catch(e){ logoSrc = null; }
 
   function drawHeader(){
-    // Full-width navy header matching #1e3a5f exactly
     pdf.setFillColor(NR, NG, NB);
-    pdf.rect(0, 0, 210, 46, 'F');
-    // Gold bottom border line
+    pdf.rect(0, 0, 210, 44, 'F');
     pdf.setFillColor(GR, GG, GB);
-    pdf.rect(0, 46, 210, 2, 'F');
-    // Logo top-right
-    if(logoSrc){ try{ pdf.addImage(logoSrc,'PNG',168,5,34,34); }catch(e){ console.log('logo err',e); } }
-    // Title text
+    pdf.rect(0, 44, 210, 2, 'F');
+    // Logo - contained within header height (max 36px tall, right aligned)
+    if(logoSrc){ try{ pdf.addImage(logoSrc, 'PNG', 172, 4, 30, 30); }catch(e){} }
     pdf.setFontSize(21); pdf.setFont('helvetica','bold'); pdf.setTextColor(GR,GG,GB);
-    pdf.text('Learning DEN AI', M, 18);
+    pdf.text('Learning DEN AI', M, 17);
     pdf.setFontSize(9); pdf.setFont('helvetica','normal'); pdf.setTextColor(180,205,235);
-    pdf.text('Learn \u00B7 Evolve \u00B7 Win \u00B7 Est. 2011', M, 27);
-    pdf.text('Student: '+studentId+'  |  '+(grade==='olevel'?'O Level':'Grade 1-8')+'  |  '+dateStr, M, 36);
+    pdf.text('Learn \u00B7 Evolve \u00B7 Win \u00B7 Est. 2011', M, 26);
+    pdf.text('Student: '+studentId+'  |  '+(grade==='olevel'?'O Level':'Grade 1-8')+'  |  '+dateStr, M, 35);
   }
 
   function drawFooter(pageNum, total){
@@ -691,64 +685,91 @@ function generatePDF(resultsData, studentId, grade, dateStr, subject){
     pdf.text('Page '+pageNum+' of '+total, 210-M, 291, {align:'right'});
   }
 
-  // Draw first page header
+  function addSectionPage(sectionTitle, sectionNum, imageName, imageNum, cleaned){
+    if(!cleaned || !cleaned.trim()) return;
+    pdf.addPage();
+    drawHeader();
+    let y = 52;
+
+    // Section title bar
+    pdf.setFillColor(NR,NG,NB);
+    pdf.roundedRect(M, y, W, 12, 2, 2, 'F');
+    pdf.setFontSize(11); pdf.setFont('helvetica','bold'); pdf.setTextColor(GR,GG,GB);
+    pdf.text('('+sectionNum+')  '+sectionTitle, M+4, y+8.5);
+    y += 17;
+
+    // Small image reference
+    pdf.setFontSize(9); pdf.setFont('helvetica','italic'); pdf.setTextColor(120,140,170);
+    pdf.text('Image '+imageNum+': '+imageName, M+2, y);
+    y += 9;
+
+    // Content
+    pdf.setFontSize(10.5); pdf.setFont('helvetica','normal'); pdf.setTextColor(15,35,65);
+    const rawLines = cleaned.split('\n');
+    rawLines.forEach(line => {
+      line = line.trim();
+      if(!line){ y += 2; return; }
+      const wrapped = pdf.splitTextToSize(line, W-4);
+      wrapped.forEach(wl => {
+        if(y > 278){ pdf.addPage(); drawHeader(); y = 52; }
+        pdf.text(wl, M+3, y);
+        y += 6;
+      });
+      y += 1.5;
+    });
+  }
+
+  // Page 1
   drawHeader();
 
+  // All images - image title + sections
   resultsData.forEach((item, i) => {
     if(!item) return;
 
-    // Each image gets a fresh page (except very first)
-    if(i > 0){ pdf.addPage(); drawHeader(); }
-    let y = 54;
-
-    // Image title bar
-    pdf.setFillColor(NR,NG,NB);
-    pdf.rect(M, y, W, 13, 'F');
-    pdf.setFontSize(12); pdf.setFont('helvetica','bold'); pdf.setTextColor(255,255,255);
-    pdf.text('Image '+(i+1)+': '+(item.name||''), M+4, y+9);
-    y += 20;
-
     const sections = [
-      { title:'KEY POINTS',        num:'1', content: item.keypoints  },
-      { title:'SUMMARY NOTES',     num:'2', content: item.summary    },
-      { title:'EXAM Q & A',        num:'3', content: item.qanda      },
-      { title:'FILL IN THE BLANKS',num:'4', content: item.fillblanks },
-      { title:'ADDITIONAL NOTES',  num:'5', content: item.additional },
-    ];
+      { title:'KEY POINTS',         num:'1', content: item.keypoints  },
+      { title:'SUMMARY NOTES',      num:'2', content: item.summary    },
+      { title:'EXAM Q & A',         num:'3', content: item.qanda      },
+      { title:'FILL IN THE BLANKS', num:'4', content: item.fillblanks },
+      { title:'ADDITIONAL NOTES',   num:'5', content: item.additional },
+    ].filter(s => strip(s.content));
 
+    if(!sections.length) return;
+
+    // Image title goes on the SAME page as first section, not alone
+    // First section page gets the image title embedded above section bar
     sections.forEach((sec, si) => {
       const cleaned = strip(sec.content);
       if(!cleaned) return;
 
-      // Every section starts on a BRAND NEW PAGE with full header
       pdf.addPage();
       drawHeader();
-      y = 54;
+      let y = 52;
+
+      // On first section of each image, show image title above
+      if(si === 0){
+        pdf.setFillColor(NR, NG, NB);
+        pdf.rect(M, y, W, 11, 'F');
+        pdf.setFontSize(11); pdf.setFont('helvetica','bold'); pdf.setTextColor(255,255,255);
+        pdf.text('Image '+(i+1)+': '+(item.name||''), M+3, y+8);
+        y += 16;
+      }
 
       // Section title bar
-      pdf.setFillColor(NR,NG,NB);
+      pdf.setFillColor(50, 90, 140);
       pdf.roundedRect(M, y, W, 12, 2, 2, 'F');
       pdf.setFontSize(11); pdf.setFont('helvetica','bold'); pdf.setTextColor(GR,GG,GB);
       pdf.text('('+sec.num+')  '+sec.title, M+4, y+8.5);
-      y += 18;
+      y += 17;
 
-      // Sub-label: image reference
-      pdf.setFontSize(9); pdf.setFont('helvetica','italic'); pdf.setTextColor(120,140,170);
-      pdf.text('Image '+(i+1)+': '+(item.name||''), M+2, y);
-      y += 8;
-
-      // Content lines
+      // Content
       pdf.setFontSize(10.5); pdf.setFont('helvetica','normal'); pdf.setTextColor(15,35,65);
-      const rawLines = cleaned.split('\n');
-      rawLines.forEach(line => {
+      cleaned.split('\n').forEach(line => {
         line = line.trim();
-        if(!line) { y += 2; return; }
+        if(!line){ y += 2; return; }
         const wrapped = pdf.splitTextToSize(line, W-4);
         wrapped.forEach(wl => {
-          if(y > 278){
-            pdf.addPage(); drawHeader(); y = 54;
-          }
-          // Bold the number prefix like "1." "Q1:" "A1:"
+          if(y > 278){ pdf.addPage(); drawHeader(); y = 52; }
           pdf.text(wl, M+3, y);
           y += 6;
         });
@@ -757,13 +778,11 @@ function generatePDF(resultsData, studentId, grade, dateStr, subject){
     });
   });
 
-  // Add page numbers to all pages
   const totalPages = pdf.getNumberOfPages();
   for(let p = 1; p <= totalPages; p++){
     pdf.setPage(p);
     drawFooter(p, totalPages);
   }
-
   pdf.save('LearningDEN_'+studentId+'_'+Date.now()+'.pdf');
 }
 
