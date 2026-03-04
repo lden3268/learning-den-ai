@@ -521,7 +521,7 @@
 
   async function processImage(img, index, total) {
     const gradeContext = selectedGrade === 'olevel' ? 'Cambridge O Level student preparing for board exams' : 'Pakistani school student in Grade 1 to 8';
-    const prompt = 'You are an expert teacher at Learning Den academy. A ' + gradeContext + ' has uploaded image ' + index + ' of ' + total + '.\n\nAnalyse this image and generate:\n\n---KEY POINTS---\nNumbered key points.\n\n---SUMMARY NOTES---\nClear summary in simple language.\n\n---EXAM Q&A---\n6 to 10 exam questions with full answers:\nQ1: [question]\nA1: [answer]\n\nMake everything exam-ready.';
+    const prompt = 'You are an expert teacher at Learning Den academy. A ' + gradeContext + ' has uploaded image ' + index + ' of ' + total + '.\n\nAnalyse this image carefully and respond using EXACTLY these section headers:\n\n---KEY POINTS---\n1. First key point\n2. Second key point\n(continue numbering)\n\n---SUMMARY NOTES---\nWrite a clear summary here in simple language.\n\n---EXAM Q&A---\nQ1: [question]\nA1: [answer]\nQ2: [question]\nA2: [answer]\n(include 6 to 10 questions)\n\nIMPORTANT: You MUST use exactly ---KEY POINTS--- and ---SUMMARY NOTES--- and ---EXAM Q&A--- as section headers.';
     const response = await fetch('/api/generate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -533,9 +533,12 @@
   }
 
   function parseResult(text) {
-    const kp = text.match(/---KEY POINTS---([\s\S]*?)(?=---SUMMARY NOTES---|$)/i);
-    const sn = text.match(/---SUMMARY NOTES---([\s\S]*?)(?=---EXAM Q&A---|$)/i);
-    const qa = text.match(/---EXAM Q&A---([\s\S]*?)$/i);
+    // Try multiple separator formats
+    const kp = text.match(/(?:---KEY POINTS---|KEY POINTS:?)([\s\S]*?)(?=---SUMMARY NOTES---|SUMMARY NOTES:?|$)/i);
+    const sn = text.match(/(?:---SUMMARY NOTES---|SUMMARY NOTES:?)([\s\S]*?)(?=---EXAM Q&A---|EXAM Q&A:?|$)/i);
+    const qa = text.match(/(?:---EXAM Q&A---|EXAM Q&A:?)([\s\S]*?)$/i);
+    // If no sections found at all, return entire text as key points
+    if (!kp && !sn && !qa) return { keypoints: text.trim(), summary: 'See key points above.', qanda: 'See key points above.' };
     return { keypoints: kp ? kp[1].trim() : 'N/A', summary: sn ? sn[1].trim() : 'N/A', qanda: qa ? qa[1].trim() : 'N/A' };
   }
 
