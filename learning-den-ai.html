@@ -296,10 +296,9 @@ footer a{color:#8899cc;text-decoration:none;}
       <img class="logo-login" src="" id="loginLogo" alt="Learning DEN">
       <h2>Student Login</h2>
       <p>Enter the Student ID given by your teacher to access Learning DEN AI.</p>
-      <input class="input-field upper" type="text" id="studentIdInput" placeholder="Student ID  e.g. LD-001" maxlength="20" onkeydown="if(event.key==='Enter') document.getElementById('studentNameInput').focus()">
-      <input class="input-field" type="text" id="studentNameInput" placeholder="Your Full Name  e.g. Ahmed Ali" maxlength="50" onkeydown="if(event.key==='Enter') loginStudent()">
+      <input class="input-field upper" type="text" id="studentIdInput" placeholder="Enter your Student ID  e.g. LD-001" maxlength="20" onkeydown="if(event.key==='Enter') loginStudent()" style="text-align:center;letter-spacing:3px;font-size:16px;">
       <button class="btn-primary" onclick="loginStudent()">Enter Learning DEN</button>
-      <div class="login-error" id="loginError">Please enter your Student ID and Name.</div>
+      <div class="login-error" id="loginError" style="margin-top:12px;"></div>
     </div>
   </div>
 
@@ -429,10 +428,29 @@ footer a{color:#8899cc;text-decoration:none;}
       <button class="btn-small" style="color:white;border-color:rgba(255,255,255,0.3);" onclick="showLanding()">← Exit Dashboard</button>
     </div>
     <div class="dash-stats" id="dashStats"></div>
-    <div class="student-list" id="studentList">
-      <div class="student-list-header"><h3>All Students</h3><span id="studentCount" style="font-size:13px;color:var(--muted);"></span></div>
-      <div id="studentRows"><div style="padding:20px;color:var(--muted);font-size:14px;">Loading students...</div></div>
-    </div>
+    <!-- ADD STUDENT PANEL -->
+      <div style="background:white;border:1.5px solid var(--border);border-radius:16px;padding:24px;margin-bottom:24px;">
+        <h3 style="font-family:'Playfair Display',serif;font-size:18px;color:var(--navy);margin-bottom:6px;">➕ Add Approved Student</h3>
+        <p style="font-size:13px;color:var(--muted);margin-bottom:16px;">Only students you add here can log in.</p>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+          <input type="text" id="newStudentId" placeholder="Student ID  e.g. LD-005" maxlength="20" style="flex:1;min-width:140px;padding:11px 15px;border:1.5px solid var(--border);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:14px;outline:none;text-transform:uppercase;letter-spacing:2px;" oninput="this.value=this.value.toUpperCase()">
+          <input type="text" id="newStudentName" placeholder="Full Name  e.g. Ahmed Ali" maxlength="50" style="flex:2;min-width:180px;padding:11px 15px;border:1.5px solid var(--border);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:14px;outline:none;">
+          <input type="text" id="newStudentClass" placeholder="Class  e.g. 7A" maxlength="20" style="flex:1;min-width:100px;padding:11px 15px;border:1.5px solid var(--border);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:14px;outline:none;">
+          <button onclick="addApprovedStudent()" style="padding:11px 22px;background:var(--navy);color:white;border:none;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;white-space:nowrap;">Add Student</button>
+        </div>
+        <div id="addStudentMsg" style="font-size:13px;margin-top:10px;display:none;padding:10px 14px;border-radius:8px;"></div>
+      </div>
+
+      <!-- APPROVED STUDENTS LIST -->
+      <div class="student-list" id="studentList">
+        <div class="student-list-header">
+          <h3>Approved Students</h3>
+          <span id="studentCount" style="font-size:13px;color:var(--muted);"></span>
+        </div>
+        <div id="approvedStudentRows" style="margin-bottom:20px;"></div>
+        <div class="student-list-header" style="margin-top:8px;border-top:1px solid var(--border);padding-top:16px;"><h3>Session Activity</h3></div>
+        <div id="studentRows"><div style="padding:20px;color:var(--muted);font-size:14px;">Loading...</div></div>
+      </div>
     <div class="session-detail" id="sessionDetail"></div>
   </div>
 </div>
@@ -536,6 +554,7 @@ async function teacherLogin(){
 
 async function loadTeacherDashboard(){
   allStudentsData = [];
+  await loadApprovedStudents();
   if(firebaseReady && db){
     try{
       const snap = await db.collection('students').get();
@@ -615,14 +634,46 @@ function downloadSessionPdf(sIdx, sessIdx){
 // ── LOGIN ────────────────────────────────────────────────
 async function loginStudent(){
   const val = document.getElementById('studentIdInput').value.trim().toUpperCase();
-  const name = document.getElementById('studentNameInput').value.trim();
-  if(!val || val.length < 2 || !name){document.getElementById('loginError').style.display='block';return;}
-  document.getElementById('loginError').style.display='none';
-  currentStudentId = val;
-  currentStudentName = name;
-  lsSet('ld_student_id', val);
-  lsSet('ld_student_name', name);
-  await initApp(val, name);
+  const errEl = document.getElementById('loginError');
+  if(!val || val.length < 2){ errEl.textContent='Please enter your Student ID.'; errEl.style.display='block'; return; }
+
+  const btn = document.querySelector('.btn-primary');
+  btn.textContent = 'Verifying...'; btn.disabled = true;
+
+  try {
+    if(firebaseReady && db){
+      const snap = await db.collection('approvedStudents').doc(val).get();
+      if(!snap.exists){
+        errEl.textContent = '❌ ID not approved. Please contact your teacher.';
+        errEl.style.display='block';
+        btn.textContent='Enter Learning DEN'; btn.disabled=false;
+        return;
+      }
+      const data = snap.data();
+      if(data.active === false){
+        errEl.textContent = '⛔ Account deactivated. Please contact your teacher.';
+        errEl.style.display='block';
+        btn.textContent='Enter Learning DEN'; btn.disabled=false;
+        return;
+      }
+      const approvedName = data.name || val;
+      errEl.style.display='none';
+      currentStudentId = val;
+      currentStudentName = approvedName;
+      lsSet('ld_student_id', val);
+      lsSet('ld_student_name', approvedName);
+      btn.textContent='Enter Learning DEN'; btn.disabled=false;
+      await initApp(val, approvedName);
+    } else {
+      errEl.textContent = '⚠️ Cannot verify — no connection. Try again.';
+      errEl.style.display='block';
+      btn.textContent='Enter Learning DEN'; btn.disabled=false;
+    }
+  } catch(e){
+    errEl.textContent = '⚠️ Error: ' + e.message;
+    errEl.style.display='block';
+    btn.textContent='Enter Learning DEN'; btn.disabled=false;
+  }
 }
 
 function logout(){
@@ -1341,6 +1392,109 @@ async function generate(){
   checkReady();
 }
 
+// ── APPROVED STUDENTS MANAGEMENT ────────────────────────
+async function addApprovedStudent(){
+  const idVal = document.getElementById('newStudentId').value.trim().toUpperCase();
+  const nameVal = document.getElementById('newStudentName').value.trim();
+  const classVal = document.getElementById('newStudentClass').value.trim();
+  const msgEl = document.getElementById('addStudentMsg');
+
+  if(!idVal || idVal.length < 2){ showAddMsg('❌ Please enter a valid Student ID.', 'error'); return; }
+  if(!nameVal){ showAddMsg('❌ Please enter the student name.', 'error'); return; }
+
+  if(!firebaseReady || !db){ showAddMsg('❌ Firebase not connected.', 'error'); return; }
+
+  try {
+    // Check if already exists
+    const existing = await db.collection('approvedStudents').doc(idVal).get();
+    if(existing.exists){ showAddMsg('⚠️ Student ID "'+idVal+'" already exists.', 'warn'); return; }
+
+    await db.collection('approvedStudents').doc(idVal).set({
+      studentId: idVal,
+      name: nameVal,
+      class: classVal || '',
+      active: true,
+      addedAt: new Date().toISOString(),
+      addedBy: 'teacher'
+    });
+
+    showAddMsg('✅ '+nameVal+' ('+idVal+') added successfully!', 'success');
+    document.getElementById('newStudentId').value = '';
+    document.getElementById('newStudentName').value = '';
+    document.getElementById('newStudentClass').value = '';
+    await loadApprovedStudents();
+  } catch(e){
+    showAddMsg('❌ Error: '+e.message, 'error');
+  }
+}
+
+function showAddMsg(text, type){
+  const el = document.getElementById('addStudentMsg');
+  el.textContent = text;
+  el.style.display = 'block';
+  el.style.background = type==='success' ? '#f0fff4' : type==='warn' ? '#fff8e1' : '#fff5f5';
+  el.style.color = type==='success' ? '#2d6a4f' : type==='warn' ? '#8a6d00' : '#c0392b';
+  el.style.border = '1px solid ' + (type==='success' ? '#a8d5b5' : type==='warn' ? '#ffe082' : '#f5c6c6');
+  setTimeout(()=>{ el.style.display='none'; }, 4000);
+}
+
+async function loadApprovedStudents(){
+  if(!firebaseReady || !db) return;
+  try {
+    const snap = await db.collection('approvedStudents').orderBy('addedAt','desc').get();
+    const container = document.getElementById('approvedStudentRows');
+    if(!container) return;
+
+    if(snap.empty){
+      container.innerHTML = '<div style="padding:16px 20px;color:var(--muted);font-size:14px;">No approved students yet. Add your first student above.</div>';
+      document.getElementById('studentCount').textContent = '0 students approved';
+      return;
+    }
+
+    document.getElementById('studentCount').textContent = snap.size + ' student(s) approved';
+    let html = '<div style="display:grid;gap:8px;padding:4px 0;">';
+    snap.forEach(doc => {
+      const d = doc.data();
+      const statusColor = d.active!==false ? '#2d6a4f' : '#c0392b';
+      const statusBg = d.active!==false ? '#f0fff4' : '#fff5f5';
+      const statusText = d.active!==false ? 'Active' : 'Disabled';
+      html += `<div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:#f9fafb;border:1px solid var(--border);border-radius:10px;gap:10px;flex-wrap:wrap;">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <div style="width:36px;height:36px;background:var(--navy);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#c9943a;font-weight:700;font-size:13px;">${d.studentId.slice(-2)}</div>
+          <div>
+            <div style="font-weight:600;font-size:14px;color:var(--text);">${d.name}</div>
+            <div style="font-size:12px;color:var(--muted);">${d.studentId}${d.class?' · Class '+d.class:''}</div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span style="font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;background:${statusBg};color:${statusColor};">${statusText}</span>
+          <button onclick="toggleStudent('${d.studentId}', ${d.active!==false})" style="padding:6px 12px;font-size:12px;font-family:'DM Sans',sans-serif;border-radius:7px;cursor:pointer;border:1px solid var(--border);background:white;color:var(--text);">${d.active!==false?'Disable':'Enable'}</button>
+          <button onclick="removeStudent('${d.studentId}', '${d.name}')" style="padding:6px 12px;font-size:12px;font-family:'DM Sans',sans-serif;border-radius:7px;cursor:pointer;border:1px solid #f5c6c6;background:#fff5f5;color:#c0392b;">Remove</button>
+        </div>
+      </div>`;
+    });
+    html += '</div>';
+    container.innerHTML = html;
+  } catch(e){ console.error('loadApprovedStudents error:', e); }
+}
+
+async function toggleStudent(studentId, currentlyActive){
+  if(!firebaseReady || !db) return;
+  try {
+    await db.collection('approvedStudents').doc(studentId).update({ active: !currentlyActive });
+    await loadApprovedStudents();
+  } catch(e){ alert('Error: '+e.message); }
+}
+
+async function removeStudent(studentId, name){
+  if(!confirm('Remove '+name+' ('+studentId+')? They will no longer be able to log in.')) return;
+  if(!firebaseReady || !db) return;
+  try {
+    await db.collection('approvedStudents').doc(studentId).delete();
+    await loadApprovedStudents();
+  } catch(e){ alert('Error: '+e.message); }
+}
+
 // ── BOOT ─────────────────────────────────────────────────
 window.addEventListener('DOMContentLoaded',()=>{
   // Set logo images
@@ -1357,4 +1511,4 @@ window.addEventListener('DOMContentLoaded',()=>{
 });
 </script>
 </body>
-</html>
+</html>await loadApprovedStudents();
