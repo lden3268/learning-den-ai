@@ -150,6 +150,18 @@ header{background:linear-gradient(135deg,#1e3a5f 0%,#2a5080 100%);padding:12px 4
 .sec-body p{margin-bottom:4px;}
 .sec-body h3,.sec-body strong{color:var(--navy);font-weight:700;}
 .sec-body .q{font-weight:700;color:var(--navy);margin-top:10px;display:block;}
+.sub-grade-btn{flex:0 0 auto!important;min-width:80px!important;padding:10px 12px!important;font-size:13px!important;}
+.subject-btn{flex:0 0 auto!important;min-width:110px!important;padding:10px 14px!important;font-size:13px!important;}
+.difficulty-badge{display:inline-block;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;margin-left:8px;vertical-align:middle;}
+.difficulty-hard{background:#fff0f0;color:#c0392b;border:1px solid #f5c6c6;}
+.difficulty-med{background:#fff8e7;color:#c9943a;border:1px solid #f5e0a0;}
+.checklist-item{display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);}
+.checklist-item:last-child{border-bottom:none;}
+.checklist-check{width:20px;height:20px;border:2px solid var(--border);border-radius:5px;flex-shrink:0;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.2s;margin-top:1px;}
+.checklist-check.done{background:var(--navy);border-color:var(--navy);color:white;}
+.checklist-text{font-size:13px;line-height:1.6;color:var(--text);}
+.whatsapp-btn{padding:11px 22px;background:#25D366;color:white;border:none;border-radius:10px;font-family:"DM Sans",sans-serif;font-size:14px;font-weight:600;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;gap:8px;}
+.whatsapp-btn:hover{background:#1db954;}
 .sec-body .a{color:var(--text);margin-bottom:6px;display:block;padding-left:12px;}
 
 .save-status{font-size:13px;color:var(--green);text-align:center;padding:10px;display:none;font-weight:500;}
@@ -283,9 +295,10 @@ footer a{color:#8899cc;text-decoration:none;}
       <img class="logo-login" src="" id="loginLogo" alt="Learning DEN">
       <h2>Student Login</h2>
       <p>Enter the Student ID given by your teacher to access Learning DEN AI.</p>
-      <input class="input-field upper" type="text" id="studentIdInput" placeholder="e.g. LD-001" maxlength="20" onkeydown="if(event.key==='Enter') loginStudent()">
+      <input class="input-field upper" type="text" id="studentIdInput" placeholder="Student ID  e.g. LD-001" maxlength="20" onkeydown="if(event.key==='Enter') document.getElementById('studentNameInput').focus()">
+      <input class="input-field" type="text" id="studentNameInput" placeholder="Your Full Name  e.g. Ahmed Ali" maxlength="50" onkeydown="if(event.key==='Enter') loginStudent()">
       <button class="btn-primary" onclick="loginStudent()">Enter Learning DEN</button>
-      <div class="login-error" id="loginError">Please enter a valid Student ID.</div>
+      <div class="login-error" id="loginError">Please enter your Student ID and Name.</div>
     </div>
   </div>
 
@@ -293,7 +306,7 @@ footer a{color:#8899cc;text-decoration:none;}
     <div class="firebase-note" id="firebaseNote">⚠️ Preview mode — Firebase saving disabled. Open in Chrome for full functionality.</div>
 
     <div class="student-bar">
-      <div class="info">Student: <strong id="displayStudentId"></strong></div>
+      <div class="info">👋 <strong id="displayStudentName"></strong> &nbsp;<span style="color:var(--muted);font-weight:400;">· ID: <span id="displayStudentId"></span></span></div>
       <div class="stats" id="sessionStats">Sessions: 0 · Images: 0</div>
       <button class="btn-small" onclick="logout()">Change ID</button>
     </div>
@@ -305,11 +318,47 @@ footer a{color:#8899cc;text-decoration:none;}
         <button class="grade-btn" onclick="selectGrade(this,'grade1-8')">Grade 1 – 8</button>
         <button class="grade-btn" onclick="selectGrade(this,'olevel')">O Level / Cambridge</button>
       </div>
+      <div id="subGradeRow" style="display:none;margin-top:12px;">
+        <div style="font-size:11px;color:var(--muted);margin-bottom:8px;letter-spacing:1px;text-transform:uppercase;">Which grade exactly?</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <button class="grade-btn sub-grade-btn" onclick="selectSubGrade(this,'1')">Grade 1</button>
+          <button class="grade-btn sub-grade-btn" onclick="selectSubGrade(this,'2')">Grade 2</button>
+          <button class="grade-btn sub-grade-btn" onclick="selectSubGrade(this,'3')">Grade 3</button>
+          <button class="grade-btn sub-grade-btn" onclick="selectSubGrade(this,'4')">Grade 4</button>
+          <button class="grade-btn sub-grade-btn" onclick="selectSubGrade(this,'5')">Grade 5</button>
+          <button class="grade-btn sub-grade-btn" onclick="selectSubGrade(this,'6')">Grade 6</button>
+          <button class="grade-btn sub-grade-btn" onclick="selectSubGrade(this,'7')">Grade 7</button>
+          <button class="grade-btn sub-grade-btn" onclick="selectSubGrade(this,'8')">Grade 8</button>
+        </div>
+      </div>
     </div>
 
-    <!-- Step 2: Upload -->
+    <!-- Step 2: Subject -->
     <div class="step-card">
-      <div class="step-label">Step 2 — Upload Images</div>
+      <div class="step-label">Step 2 — Your Subject &nbsp;<span style="color:#c0392b;font-size:10px;letter-spacing:0;">* Required</span></div>
+      <div class="grade-row" style="flex-wrap:wrap;gap:8px;" id="subjectBtns">
+        <button class="grade-btn subject-btn" onclick="selectSubject(this,'Science')">🔬 Science</button>
+        <button class="grade-btn subject-btn" onclick="selectSubject(this,'Biology')">🧬 Biology</button>
+        <button class="grade-btn subject-btn" onclick="selectSubject(this,'Chemistry')">⚗️ Chemistry</button>
+        <button class="grade-btn subject-btn" onclick="selectSubject(this,'Physics')">⚡ Physics</button>
+        <button class="grade-btn subject-btn" onclick="selectSubject(this,'Maths')">📐 Maths</button>
+        <button class="grade-btn subject-btn" onclick="selectSubject(this,'English Literature')">📖 English Lit</button>
+        <button class="grade-btn subject-btn" onclick="selectSubject(this,'English Language')">✍️ English Lang</button>
+        <button class="grade-btn subject-btn" onclick="selectSubject(this,'Urdu')">🌙 Urdu</button>
+        <button class="grade-btn subject-btn" onclick="selectSubject(this,'Islamiyat')">☪️ Islamiyat</button>
+        <button class="grade-btn subject-btn" onclick="selectSubject(this,'Pakistan Studies')">🗺️ Pak Studies</button>
+        <button class="grade-btn subject-btn" onclick="selectSubject(this,'History')">📜 History</button>
+        <button class="grade-btn subject-btn" onclick="selectSubject(this,'Geography')">🌍 Geography</button>
+        <button class="grade-btn subject-btn" onclick="selectSubject(this,'Computer Science')">💻 Computer</button>
+        <button class="grade-btn subject-btn" onclick="selectSubject(this,'Accounts')">📊 Accounts</button>
+        <button class="grade-btn subject-btn" onclick="selectSubject(this,'Economics')">💹 Economics</button>
+      </div>
+      <input class="input-field" type="text" id="chapterInput" placeholder="Chapter / Topic name  e.g. Chapter 3: Elements and Compounds" maxlength="80" oninput="checkReady()" style="margin-top:12px;">
+    </div>
+
+    <!-- Step 3: Upload -->
+    <div class="step-card">
+      <div class="step-label">Step 3 — Upload Images</div>
       <div class="upload-zone" id="uploadZone"
         ondragover="event.preventDefault();this.classList.add('dragover')"
         ondragleave="this.classList.remove('dragover')"
@@ -399,6 +448,9 @@ const API_ENDPOINT = '/api/generate';
 
 // ── STATE ────────────────────────────────────────────────
 let currentStudentId = '';
+  let currentStudentName = '';
+  let selectedSubGrade = '';
+  let selectedSubject = '';
 let selectedGrade = '';
 let uploadedImages = [];
 let allResultTexts = [];
@@ -542,16 +594,19 @@ function downloadSessionPdf(sIdx, sessIdx){
 // ── LOGIN ────────────────────────────────────────────────
 async function loginStudent(){
   const val = document.getElementById('studentIdInput').value.trim().toUpperCase();
-  if(!val || val.length < 2){document.getElementById('loginError').style.display='block';return;}
+  const name = document.getElementById('studentNameInput').value.trim();
+  if(!val || val.length < 2 || !name){document.getElementById('loginError').style.display='block';return;}
   document.getElementById('loginError').style.display='none';
   currentStudentId = val;
+  currentStudentName = name;
   lsSet('ld_student_id', val);
-  await initApp(val);
+  lsSet('ld_student_name', name);
+  await initApp(val, name);
 }
 
 function logout(){
-  currentStudentId='';
-  lsSet('ld_student_id',null);
+  currentStudentId=''; currentStudentName=''; selectedSubject=''; selectedSubGrade='';
+  lsSet('ld_student_id',null); lsSet('ld_student_name',null);
   document.getElementById('loginScreen').style.display='block';
   document.getElementById('mainApp').style.display='none';
   document.getElementById('headerBadge').style.display='none';
@@ -561,7 +616,9 @@ function logout(){
   showApp();
 }
 
-async function initApp(studentId){
+async function initApp(studentId, studentName){
+  if(!studentName) studentName = lsGet('ld_student_name') || studentId;
+  currentStudentName = studentName;
   if(firebaseReady && db){
     try{
       const ref = db.collection('students').doc(studentId);
@@ -572,7 +629,8 @@ async function initApp(studentId){
   document.getElementById('loginScreen').style.display='none';
   document.getElementById('mainApp').style.display='block';
   document.getElementById('displayStudentId').textContent=studentId;
-  document.getElementById('headerBadge').textContent=studentId;
+  document.getElementById('displayStudentName').textContent=studentName||studentId;
+  document.getElementById('headerBadge').textContent=studentName||studentId;
   document.getElementById('headerBadge').style.display='block';
   await loadStudentStats(studentId);
   await loadHistory(studentId);
@@ -606,14 +664,15 @@ async function loadHistory(studentId){
   sessionHistory.forEach((d,idx)=>{
     const date=new Date(d.createdAt).toLocaleString('en-PK',{timeZone:'Asia/Karachi'});
     const div=document.createElement('div');div.className='history-item';
-    div.innerHTML=`<div style="flex:1"><div class="h-date">${date}</div><div class="h-title">Subject: ${d.subject||'N/A'} · ${d.grade==='olevel'?'O Level':'Grade 1-8'}</div><div class="h-count">${d.imageCount||0} image(s)</div></div><button class="btn-view" onclick="downloadHistoryPdf(${idx})">PDF</button>`;
+    const gl = d.grade==='olevel'?'O Level':'Grade '+(d.subGrade||''); div.innerHTML=`<div style="flex:1"><div class="h-date">${date}</div><div class="h-title">${d.studentName||''} · ${d.subject||'N/A'} · ${gl}${d.chapter?' · '+d.chapter:''}</div><div class="h-count">${d.imageCount||0} image(s)</div></div><button class="btn-view" onclick="downloadHistoryPdf(${idx})">PDF</button>`;
     list.appendChild(div);
   });
 }
 
 async function saveSession(results, imageCount){
-  const subject = document.getElementById('subjectInput').value.trim() || 'General';
-  const sessionData={createdAt:new Date().toISOString(),grade:selectedGrade,imageCount,results,subject};
+  const subj = selectedSubject || 'General';
+  const chap = document.getElementById('chapterInput')?.value?.trim() || '';
+  const sessionData={createdAt:new Date().toISOString(),grade:selectedGrade,subGrade:selectedSubGrade,imageCount,results,subject:subj,chapter:chap,studentName:currentStudentName};
   if(firebaseReady && db){
     try{
       await db.collection('students').doc(currentStudentId).collection('sessions').add(sessionData);
@@ -640,7 +699,7 @@ function downloadHistoryPdf(idx){
 }
 
 // ── PDF ──────────────────────────────────────────────────
-function generatePDF(resultsData, studentId, grade, dateStr, subject){
+function generatePDF(resultsData, studentId, grade, dateStr, subject, studentName, chapter){
   const {jsPDF} = window.jspdf;
   const pdf = new jsPDF({orientation:'portrait', unit:'mm', format:'a4'});
   const M = 18, W = 174;
@@ -659,7 +718,9 @@ function generatePDF(resultsData, studentId, grade, dateStr, subject){
     pdf.text('Learning DEN AI', 105, 17, {align:'center'});
     pdf.setFontSize(9); pdf.setFont('helvetica','normal'); pdf.setTextColor(180,205,235);
     pdf.text('Learn \u00B7 Evolve \u00B7 Win \u00B7 Est. 2011', 105, 26, {align:'center'});
-    pdf.text('Student: '+studentId+'  |  '+(grade==='olevel'?'O Level':'Grade 1-8')+'  |  '+dateStr, 105, 35, {align:'center'});
+    const gradeLabel = (grade==='olevel'||grade==='O Level') ? 'O Level' : 'Grade '+grade;
+  pdf.text('Student: '+(studentName||studentId)+'  ('+studentId+')  |  '+gradeLabel+'  |  '+(subject||''), 105, 28, {align:'center'});
+  pdf.text((chapter?'Topic: '+chapter+'  |  ':'')+dateStr, 105, 36, {align:'center'});
   }
 
   function drawFooter(pageNum, total){
@@ -683,7 +744,8 @@ function generatePDF(resultsData, studentId, grade, dateStr, subject){
       { title:'EXAM Q & A',         num:'3', content: item.qanda      },
       { title:'FILL IN THE BLANKS', num:'4', content: item.fillblanks },
       { title:'ADDITIONAL NOTES',   num:'5', content: item.additional },
-    ].filter(s => strip(s.content).length > 0);
+      { title:'REVISION CHECKLIST', num:'6', content: item.checklist  },
+    ].filter(s => strip(s.content||'').length > 0);
 
     if(!sections.length) return;
 
@@ -743,7 +805,23 @@ function generatePDF(resultsData, studentId, grade, dateStr, subject){
 }
 
 // ── UPLOAD ───────────────────────────────────────────────
-function selectGrade(btn,grade){document.querySelectorAll('.grade-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');selectedGrade=grade;checkReady();}
+function selectGrade(btn,grade){
+  document.querySelectorAll('.grade-btn:not(.sub-grade-btn):not(.subject-btn)').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active'); selectedGrade=grade;
+  // Show sub-grade row only for grade1-8
+  document.getElementById('subGradeRow').style.display = grade==='grade1-8' ? 'block' : 'none';
+  if(grade==='olevel'){ selectedSubGrade='olevel'; }
+  else { selectedSubGrade=''; }
+  checkReady();
+}
+function selectSubGrade(btn,grade){
+  document.querySelectorAll('.sub-grade-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active'); selectedSubGrade=grade; checkReady();
+}
+function selectSubject(btn,subject){
+  document.querySelectorAll('.subject-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active'); selectedSubject=subject; checkReady();
+}
 function handleDrop(e){e.preventDefault();document.getElementById('uploadZone').classList.remove('dragover');addFiles(e.dataTransfer.files);}
 function handleFiles(files){addFiles(files);document.getElementById('fileInput').value='';}
 function addFiles(files){
@@ -776,7 +854,9 @@ function renderGrid(){
 }
 function checkReady(){
   const subject='auto';
-  document.getElementById('generateBtn').disabled=!(uploadedImages.length>0 && currentStudentId && selectedGrade!=='');
+  const chapter = document.getElementById('chapterInput')?.value?.trim()||'';
+  const gradeOk = selectedSubGrade !== '';
+  document.getElementById('generateBtn').disabled=!(uploadedImages.length>0 && currentStudentId && gradeOk && selectedSubject!=='');
 }
 function showError(msg){const box=document.getElementById('errorBox');box.textContent=msg;box.style.display='block';setTimeout(()=>box.style.display='none',6000);}
 function setProgress(current,total){
@@ -790,92 +870,262 @@ function setProgress(current,total){
 // ── AI PROMPT BUILDER ────────────────────────────────────
 function buildPrompt(img, index, total){
   const isOLevel = selectedGrade==='olevel';
-  const subjectLow = '';
-  const isLiterature = /literature|novel|poetry|poem|prose|shakespear|english lit/i.test(subjectLow);
-  const isLanguage = /english language|urdu lang|grammar|composition|language/i.test(subjectLow) && !isLiterature;
-  const isMathsSci = /math|physics|chemistry|biology|science|stats|account/i.test(subjectLow);
-  const gradeCtx = isOLevel ? 'Cambridge O Level student preparing for board exams' : 'Pakistani school student in Grade 1 to 8';
+  const gradeNum = parseInt(selectedSubGrade) || 0;
+  const isLowerPrimary = gradeNum >= 1 && gradeNum <= 3;
+  const isUpperPrimary = gradeNum >= 4 && gradeNum <= 5;
+  const isMiddle = gradeNum >= 6 && gradeNum <= 8;
+  const chapter = document.getElementById('chapterInput')?.value?.trim() || '';
+  const subjectLow = selectedSubject.toLowerCase();
+
+  const isLiterature = /literature|english lit/i.test(subjectLow);
+  const isLanguage = /english lang|urdu/i.test(subjectLow) && !isLiterature;
+  const isMaths = /maths|math/i.test(subjectLow);
+  const isScience = /science|biology|chemistry|physics/i.test(subjectLow);
+  const isUrdu = /urdu/i.test(subjectLow);
+  const isIslamiyat = /islamiyat/i.test(subjectLow);
+  const isHumSoc = /history|geography|pak studies|pakistan studies|economics|accounts/i.test(subjectLow);
+
+  // Grade context for AI
+  let gradeCtx = '';
+  if(isOLevel) gradeCtx = 'Cambridge O Level student preparing for board exams';
+  else if(isLowerPrimary) gradeCtx = `Grade ${selectedSubGrade} primary school student (age ${gradeNum+5}-${gradeNum+6}). Use very simple words, short sentences, fun examples.`;
+  else if(isUpperPrimary) gradeCtx = `Grade ${selectedSubGrade} primary school student. Use simple clear language with relatable examples.`;
+  else if(isMiddle) gradeCtx = `Grade ${selectedSubGrade} middle school student. Use proper academic language with clear explanations.`;
+
+  const chapterCtx = chapter ? `The topic/chapter is: "${chapter}".` : '';
+
+  // Difficulty flag instruction
+  const difficultyNote = `
+After EXAM Q&A, mark each question with [EASY], [MEDIUM], or [HARD] based on how likely it is to be tricky in exams.`;
+
+  // Revision checklist instruction
+  const checklistNote = `
+---REVISION CHECKLIST---
+Write 5-8 "I can..." statements the student should be able to say after studying this topic.
+Example: I can explain what an element is.
+Each on its own line, starting with "I can"`;
 
   let instructions = '';
 
   if(isLiterature){
-    instructions = `This appears to be a Literature image. Generate ALL of the following sections:
+    if(isOLevel){
+      instructions = `Generate ALL sections below for this O Level English Literature content:
 
 ---KEY POINTS---
-List the main literary points, themes, and concepts.
+Key themes, characters, plot points, and literary concepts. Number each point.
 
 ---SUMMARY NOTES---
-Write a clear chapter/passage summary.
+Detailed chapter/passage summary with key events and character development.
 
 ---EXAM Q&A---
-Q1: [question]
-A1: [answer]
-(Include 8-10 questions with complete answers based ONLY on the content in the image)
+Q1: [question] [EASY/MEDIUM/HARD]
+A1: [detailed answer with textual evidence]
+Give 8 questions including comprehension, character analysis, and theme questions. Each answer should be 3-5 sentences with marks guide e.g. [4 marks].
+${difficultyNote}
 
 ---FILL IN THE BLANKS---
-1. __________ is the main theme of this passage/chapter. (Answer: ...)
-(Give 8-10 fill in the blank questions)
+1. The main theme of this passage is __________. (Answer: ...)
+Give 8 fill in the blank questions.
 
 ---ADDITIONAL NOTES---
-${isOLevel ? `
-RTC (Reference to Context): Provide 3 RTC exercises with context, explanation and significance.
-Literary Devices: Identify and explain at least 5 literary devices used.
-ERQ (Extended Response Questions): Give 2 ERQs with model answers.
-CRQ (Comprehension Response Questions): Give 3 CRQs with answers.` : `
-Literary Devices: Identify 3 simple literary devices.
-Short Questions: Give 5 short questions with answers.`}`;
-  } else if(isLanguage){
-    instructions = `This appears to be a Language/Grammar image. Generate ALL of the following:
+RTC (Reference to Context) - 3 exercises:
+Passage: "[quote from text]"
+(i) Identify the speaker/writer and context.
+(ii) Explain the significance of this moment.
+(iii) Comment on the language used.
+
+Literary Devices - identify and explain 5 devices with quotes.
+ERQ (Extended Response): Give 2 essay questions with model answer outlines.
+CRQ (Comprehension Response): Give 3 comprehension questions with answers.
+${checklistNote}`;
+    } else {
+      instructions = `Generate ALL sections for this Grade ${selectedSubGrade} Literature/Story content:
 
 ---KEY POINTS---
-Identify the grammar topic(s) shown in the image.
+Main points about characters, plot, and themes. Simple language. Number each point.
 
 ---SUMMARY NOTES---
-Explain the grammar rule/topic clearly in simple language. Give 3 clear examples.
+Simple retelling of the story/passage in ${isLowerPrimary ? '3-4 short sentences' : '1-2 clear paragraphs'}.
 
 ---EXAM Q&A---
-Q1: [question about the grammar topic]
+Q1: [question] [EASY/MEDIUM/HARD]
 A1: [answer]
-(Give 8 questions with answers)
+Give ${isLowerPrimary ? '5' : '7'} questions. Keep language simple and age-appropriate.
+${difficultyNote}
 
 ---FILL IN THE BLANKS---
-1. __________ [fill in blank exercise]. (Answer: ...)
-(Give 10 fill in the blank exercises based on the topic)
+1. The main character in the story is __________. (Answer: ...)
+Give ${isLowerPrimary ? '5' : '7'} fill in the blank questions.
 
 ---ADDITIONAL NOTES---
-EXERCISES: Create 15 practice exercises based on this grammar topic. Number them 1-15. Each should be a sentence where the student applies the rule.`;
-  } else {
-    instructions = `Generate ALL of the following sections:
+${isMiddle ? 'Identify 3 literary devices used. Give 5 short questions with answers.' : 'List 3 new vocabulary words from the passage with meanings.'}
+${checklistNote}`;
+    }
+  } else if(isLanguage || isUrdu){
+    const lang = isUrdu ? 'Urdu' : 'English';
+    instructions = `Generate ALL sections for this ${lang} Language/Grammar content:
 
 ---KEY POINTS---
-List numbered key points from the image content.
+Identify the exact grammar topic(s) shown. List the rules clearly. Number each point.
 
 ---SUMMARY NOTES---
-Write a clear summary in simple language appropriate for a ${gradeCtx}.
+Explain the grammar rule in ${isLowerPrimary ? 'very simple words a young child understands' : 'clear simple language'}.
+Give 3 clear examples showing correct usage.
+${isUrdu ? 'Write the explanation in Urdu where helpful.' : ''}
 
 ---EXAM Q&A---
-Q1: [question based on image content]
+Q1: [question about grammar rule] [EASY/MEDIUM/HARD]
+A1: [answer]
+Give 8 questions testing this grammar topic.
+${difficultyNote}
+
+---FILL IN THE BLANKS---
+1. __________ [sentence using the grammar topic]. (Answer: ...)
+Give 10 fill in the blank exercises practising this rule.
+
+---ADDITIONAL NOTES---
+PRACTICE EXERCISES: Write 15 numbered practice sentences where the student must apply this grammar rule. Vary difficulty from easy to hard.
+${checklistNote}`;
+  } else if(isMaths){
+    instructions = `Generate ALL sections for this ${isOLevel ? 'O Level' : 'Grade '+selectedSubGrade} Mathematics content:
+
+---KEY POINTS---
+List all formulas, rules, and concepts shown in the image. Number each point clearly.
+Format formulas clearly e.g. Area of rectangle = length x width
+
+---SUMMARY NOTES---
+Explain the mathematical concept step by step. Use ${isLowerPrimary ? 'very simple language with visual/counting examples' : 'clear worked examples'}.
+Show at least 2 fully worked example problems.
+
+---EXAM Q&A---
+Q1: [maths problem] [EASY/MEDIUM/HARD]
+A1: [full step-by-step working]
+Give 8 practice problems with full worked solutions. Include marks e.g. [3 marks].
+${difficultyNote}
+
+---FILL IN THE BLANKS---
+1. The formula for __________ is __________. (Answer: ...)
+Give 8 fill in the blank questions about formulas and definitions.
+
+---ADDITIONAL NOTES---
+COMMON MISTAKES: List 3 common mistakes students make with this topic.
+MEMORY TIP: Give a helpful trick or mnemonic to remember the key formula/rule.
+${checklistNote}`;
+  } else if(isScience){
+    instructions = `Generate ALL sections for this ${isOLevel ? 'O Level' : 'Grade '+selectedSubGrade} ${selectedSubject} content:
+
+---KEY POINTS---
+List all key scientific facts, definitions, and concepts. Number each point.
+Highlight any important formulas or equations.
+
+---SUMMARY NOTES---
+Explain the scientific concept clearly for a ${gradeCtx}.
+Include real-world examples to make it memorable.
+
+---EXAM Q&A---
+Q1: [science question] [EASY/MEDIUM/HARD]
 A1: [complete answer]
-(Give 8-10 exam questions with full answers. Base answers ONLY on the content visible in the image.)
+Give 8-10 questions. Mix of: define, explain, describe, compare, and calculate types. Include marks e.g. [2 marks].
+${difficultyNote}
+
+---FILL IN THE BLANKS---
+1. __________ is defined as __________. (Answer: ...)
+Give 8-10 fill in the blank questions using key scientific terms.
+
+---ADDITIONAL NOTES---
+KEY DEFINITIONS: List all scientific terms from this topic with clear definitions.
+${isOLevel ? 'DIAGRAMS: Describe any important diagrams and what they show.\nFORMULAS: List all equations and formulas with units.' : 'REMEMBER: Give a fun memory trick for the hardest concept.'}
+${checklistNote}`;
+  } else if(isIslamiyat){
+    instructions = `Generate ALL sections for this ${isOLevel ? 'O Level' : 'Grade '+selectedSubGrade} Islamiyat content:
+
+---KEY POINTS---
+List the key Islamic concepts, events, or teachings shown. Number each point.
+Include relevant Arabic terms with English meanings.
+
+---SUMMARY NOTES---
+Explain the topic clearly and respectfully for a ${gradeCtx}.
+Include significance and lessons learned.
+
+---EXAM Q&A---
+Q1: [question] [EASY/MEDIUM/HARD]
+A1: [answer]
+Give 8 questions. ${isOLevel ? 'Include source analysis and significance questions. Add marks guide.' : 'Use simple clear language.'}
+${difficultyNote}
+
+---FILL IN THE BLANKS---
+1. __________ is the meaning of __________. (Answer: ...)
+Give 8 fill in the blank questions.
+
+---ADDITIONAL NOTES---
+KEY ARABIC TERMS: List important Arabic words/phrases with meanings and transliteration.
+${isOLevel ? 'SIGNIFICANCE: Explain the importance of the events/teachings for Muslims today.' : ''}
+${checklistNote}`;
+  } else if(isHumSoc){
+    instructions = `Generate ALL sections for this ${isOLevel ? 'O Level' : 'Grade '+selectedSubGrade} ${selectedSubject} content:
+
+---KEY POINTS---
+List key facts, events, dates, people, and concepts. Number each point.
+
+---SUMMARY NOTES---
+Write a clear summary of the topic for a ${gradeCtx}.
+Include causes, events, and effects/significance where relevant.
+
+---EXAM Q&A---
+Q1: [question] [EASY/MEDIUM/HARD]
+A1: [answer]
+Give 8-10 questions. Mix of: describe, explain, analyse, evaluate types. ${isOLevel ? 'Add marks guide [2-8 marks].' : ''}
+${difficultyNote}
+
+---FILL IN THE BLANKS---
+1. __________ happened in the year __________. (Answer: ...)
+Give 8-10 fill in the blank questions on key facts and dates.
+
+---ADDITIONAL NOTES---
+KEY DATES/FACTS: Create a quick reference timeline or fact list.
+${isOLevel ? 'ESSAY TIPS: Give 2 essay question outlines with key points to include.' : 'MEMORY TIP: A trick to remember the most important facts.'}
+${checklistNote}`;
+  } else {
+    // Generic fallback
+    instructions = `Generate ALL sections for this ${isOLevel ? 'O Level' : 'Grade '+selectedSubGrade} ${selectedSubject||'subject'} content:
+
+---KEY POINTS---
+List all key points, facts, and concepts. Number each clearly.
+
+---SUMMARY NOTES---
+Write a clear summary appropriate for a ${gradeCtx}.
+
+---EXAM Q&A---
+Q1: [question] [EASY/MEDIUM/HARD]
+A1: [complete answer]
+Give 8-10 questions with full answers.
+${difficultyNote}
 
 ---FILL IN THE BLANKS---
 1. __________ [fill in blank]. (Answer: ...)
-(Give 8-10 fill in the blank questions from the image content)
+Give 8-10 fill in the blank questions.
 
 ---ADDITIONAL NOTES---
-${isMathsSci && isOLevel ? 'Include any relevant formulas, definitions, and diagram explanations if visible.' : 'Include any important dates, definitions, or facts from the image.'}`;
+Include key definitions, important facts, and a memory tip.
+${checklistNote}`;
   }
 
-  return `You are an expert teacher at Learning DEN academy. A ${gradeCtx} has uploaded image ${index} of ${total}.
+  return `You are an expert, caring teacher at Learning DEN academy in Karachi, Pakistan. ${chapterCtx}
 
-First, automatically identify what subject and topic this image is about by reading its content. Then carefully analyse EVERY piece of text and information visible. Your goal is to help this student score an A grade.
+Your student is a ${gradeCtx}. They have uploaded image ${index} of ${total} from their ${selectedSubject||'textbook'}.
 
-IMPORTANT RULES:
-- Do NOT use ** or * for formatting. Use PLAIN TEXT only.
-- Write section headers EXACTLY as shown (---KEY POINTS--- etc.)
-- Base all questions and answers ONLY on what is visible in the image
-- Use clear, simple language appropriate for the grade level
-- Make all content exam-ready
+Carefully read and analyse EVERY piece of text, diagram, and information in this image. Your goal is to help this student score an A grade.
+
+STRICT RULES — follow exactly:
+- Use PLAIN TEXT only. NO asterisks (**), NO markdown, NO bullet symbols (•).
+- Use EXACTLY these section headers: ---KEY POINTS--- ---SUMMARY NOTES--- ---EXAM Q&A--- ---FILL IN THE BLANKS--- ---ADDITIONAL NOTES--- ---REVISION CHECKLIST---
+- Number all points: 1. 2. 3. etc.
+- Format Q&A as: Q1: [question] then A1: [answer] on separate lines
+- Base ALL content ONLY on what is visible in this image
+- Language complexity must match the grade level
+- For lower grades (1-3): very simple words, short sentences, fun real-life examples
+- For middle grades (6-8): proper academic vocabulary, structured answers
+- For O Level: Cambridge exam style, marks allocation, textual evidence
 
 ${instructions}`;
 }
@@ -888,12 +1138,14 @@ function parseResult(text){
   const fb  = text.match(/---FILL IN THE BLANKS---([\s\S]*?)(?=---ADDITIONAL NOTES---|$)/i);
   const add = text.match(/---ADDITIONAL NOTES---([\s\S]*?)$/i);
   if(!kp && !sn && !qa) return {keypoints:text.trim(),summary:'',qanda:'',fillblanks:'',additional:''};
+  const ch = text.match(/---REVISION CHECKLIST---([\s\S]*?)$/i);
   return {
     keypoints: kp?kp[1].trim():'',
     summary:   sn?sn[1].trim():'',
     qanda:     qa?qa[1].trim():'',
     fillblanks:fb?fb[1].trim():'',
-    additional:add?add[1].trim():''
+    additional:add?add[1].trim():'',
+    checklist: ch?ch[1].trim():''
   };
 }
 
@@ -909,8 +1161,12 @@ function formatResultHtml(parsed){
   function sec(icon,title,content){
     if(!content||content.trim()==='') return '';
     const clean=cleanText(content);
-    // Format Q&A
-    const formatted=clean.replace(/^(Q\d+:.*)/gm,'<span class="q">$1</span>').replace(/^(A\d+:.*)/gm,'<span class="a">$1</span>');
+    // Format Q&A and difficulty badges
+    let formatted = clean
+      .replace(/\[HARD\]/g,'<span class="difficulty-badge difficulty-hard">HARD</span>')
+      .replace(/\[MEDIUM\]/g,'<span class="difficulty-badge difficulty-med">MEDIUM</span>')
+      .replace(/\[EASY\]/g,'<span class="difficulty-badge" style="background:#f0fff4;color:#2d6a4f;border:1px solid #a8d5b5;">EASY</span>');
+    formatted = formatted.replace(/^(Q\d+:.*)/gm,'<span class="q">$1</span>').replace(/^(A\d+:.*)/gm,'<span class="a">$1</span>');
     return `<div class="section-wrap">
       <div class="sec-head"><span class="sec-icon">${icon}</span><span class="sec-title">${title}</span></div>
       <div class="sec-body">${formatted}</div></div>`;
@@ -920,6 +1176,17 @@ function formatResultHtml(parsed){
   html+=sec('❓','Exam Q&A',parsed.qanda);
   html+=sec('✏️','Fill in the Blanks',parsed.fillblanks);
   html+=sec('📚','Additional Notes',parsed.additional);
+  if(parsed.checklist && parsed.checklist.trim()){
+    const items = cleanText(parsed.checklist).split('\n').filter(l=>l.trim().toLowerCase().startsWith('i can'));
+    if(items.length){
+      let cl = '<div class="section-wrap"><div class="sec-head"><span class="sec-icon">✅</span><span class="sec-title">Revision Checklist</span></div><div class="sec-body" style="padding:14px 20px;">';
+      items.forEach((item,idx)=>{
+        cl += `<div class="checklist-item"><div class="checklist-check" onclick="this.classList.toggle('done');this.innerHTML=this.classList.contains('done')?'✓':''"></div><div class="checklist-text">${item.trim()}</div></div>`;
+      });
+      cl += '</div></div>';
+      html += cl;
+    }
+  }
   return html;
 }
 
@@ -946,7 +1213,8 @@ function downloadPDF(){
 
 // ── GENERATE ─────────────────────────────────────────────
 async function generate(){
-  const subject='auto-detect';
+  const subject = selectedSubject || 'General';
+  const chapter = document.getElementById('chapterInput')?.value?.trim() || '';
   if(!uploadedImages.length||!currentStudentId) return;
 
   const resultsDiv=document.getElementById('results');
@@ -979,7 +1247,7 @@ async function generate(){
       allResultData.push({name:uploadedImages[i].name,...parsed});
 
       const block=document.createElement('div');block.className='result-block';
-      block.innerHTML=`<div class="result-block-header"><img src="${uploadedImages[i].src}"><div><div class="rb-title">Image ${i+1}: ${uploadedImages[i].name}</div><div class="rb-sub">${selectedGrade==='olevel'?'O Level':'Grade 1-8'} · ${currentStudentId}</div></div><button class="btn-copy-s" onclick="copySingle(${i})">Copy</button></div>${formatResultHtml(parsed)}`;
+      block.innerHTML=`<div class="result-block-header"><img src="${uploadedImages[i].src}"><div><div class="rb-title">Image ${i+1}: ${uploadedImages[i].name}</div><div class="rb-sub">${selectedGrade==='olevel'?'O Level':'Grade '+selectedSubGrade} · ${selectedSubject} · ${currentStudentName}</div></div><button class="btn-copy-s" onclick="copySingle(${i})">Copy</button></div>${formatResultHtml(parsed)}`;
       blocks.push(block);
     }catch(err){
       allResultTexts.push('');allResultData.push(null);
@@ -988,10 +1256,11 @@ async function generate(){
     }
   }
 
-  const subject2='AI-Generated';
+  const subject2 = selectedSubject || 'General';
   const dateStr=new Date().toLocaleString('en-PK',{timeZone:'Asia/Karachi'});
   const header=document.createElement('div');header.className='results-header';
-  header.innerHTML=`<h2>Study Material Ready</h2><p>${total} image(s) &nbsp;·&nbsp; ${selectedGrade==='olevel'?'O Level':'Grade 1-8'} &nbsp;·&nbsp; ${subject2} &nbsp;·&nbsp; ${currentStudentId} &nbsp;·&nbsp; ${dateStr}</p><div class="result-actions"><button class="btn-gold" onclick="downloadPDF()">Download PDF</button><button class="btn-outline-w" id="copyAllBtn" onclick="copyAllResults()">Copy All</button></div>`;
+  const gradeLabel = selectedGrade==='olevel' ? 'O Level' : 'Grade '+selectedSubGrade;
+  header.innerHTML=`<h2>Study Material Ready ✨</h2><p>${currentStudentName} &nbsp;·&nbsp; ${gradeLabel} &nbsp;·&nbsp; ${subject2}${chapter?' · '+chapter:''} &nbsp;·&nbsp; ${total} image(s) &nbsp;·&nbsp; ${dateStr}</p><div class="result-actions"><button class="btn-gold" onclick="downloadPDF()">⬇ Download PDF</button><button class="whatsapp-btn" onclick="shareWhatsApp()">📱 Share</button><button class="btn-outline-w" id="copyAllBtn" onclick="copyAllResults()">Copy All</button></div>`;
   resultsDiv.appendChild(header);
   blocks.forEach(b=>resultsDiv.appendChild(b));
   resultsDiv.style.display='block';
@@ -1013,7 +1282,8 @@ window.addEventListener('DOMContentLoaded',()=>{
 
   initFirebase().then(()=>{
     const saved=lsGet('ld_student_id');
-    if(saved){currentStudentId=saved;showApp();initApp(saved);}
+    const savedName=lsGet('ld_student_name');
+    if(saved){currentStudentId=saved;currentStudentName=savedName||saved;showApp();initApp(saved,savedName||saved);}
     else{showLanding();}
   });
 });
