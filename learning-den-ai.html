@@ -17,7 +17,7 @@
 body{font-family:"DM Sans",sans-serif;background:var(--white);color:var(--text);min-height:100vh;}
 
 /* ── HEADER ── */
-header{background:var(--navy);padding:12px 40px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:200;border-bottom:3px solid var(--gold);}
+header{background:linear-gradient(135deg,#1e3a5f 0%,#2a5080 100%);padding:12px 40px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:200;border-bottom:3px solid var(--gold);box-shadow:0 4px 20px rgba(30,58,95,0.3);}
 .logo-wrap{display:flex;align-items:center;gap:14px;}
 .logo-img{width:52px;height:52px;border-radius:50%;object-fit:cover;border:2px solid var(--gold);background:white;}
 .logo-text{font-family:"Playfair Display",serif;font-size:20px;color:white;line-height:1.1;}
@@ -30,7 +30,7 @@ header{background:var(--navy);padding:12px 40px;display:flex;align-items:center;
 
 /* ── LANDING PAGE ── */
 #landingPage{display:block;}
-.landing-hero{background:linear-gradient(135deg,var(--navy) 0%,var(--navy-light) 50%,#2d1f5e 100%);padding:80px 40px 90px;text-align:center;position:relative;overflow:hidden;}
+.landing-hero{background:linear-gradient(135deg,#1e3a5f 0%,#2a5080 50%,#1a4a6b 100%);padding:80px 40px 90px;text-align:center;position:relative;overflow:hidden;}
 .landing-hero::before{content:"";position:absolute;inset:0;background:radial-gradient(ellipse at 30% 50%,rgba(201,148,58,0.12) 0%,transparent 60%),radial-gradient(ellipse at 70% 20%,rgba(100,120,200,0.1) 0%,transparent 50%);pointer-events:none;}
 .hero-logo{width:120px;height:120px;border-radius:50%;object-fit:cover;border:4px solid var(--gold);margin:0 auto 24px;display:block;box-shadow:0 0 40px rgba(201,148,58,0.3);}
 .landing-hero h1{font-family:"Playfair Display",serif;font-size:clamp(36px,5vw,64px);color:white;line-height:1.1;margin-bottom:16px;}
@@ -81,9 +81,9 @@ header{background:var(--navy);padding:12px 40px;display:flex;align-items:center;
 .step-card{background:white;border:1.5px solid var(--border);border-radius:20px;padding:28px;margin-bottom:20px;}
 .step-label{font-size:11px;font-weight:600;color:var(--gold);letter-spacing:2px;text-transform:uppercase;margin-bottom:14px;}
 .grade-row{display:flex;gap:10px;}
-.grade-btn{flex:1;padding:12px;border:1.5px solid var(--border);border-radius:12px;background:white;font-family:"DM Sans",sans-serif;font-size:14px;font-weight:500;color:var(--muted);cursor:pointer;transition:all 0.2s;text-align:center;}
+.grade-btn{flex:1;padding:14px;border:2px solid var(--border);border-radius:14px;background:white;font-family:"DM Sans",sans-serif;font-size:15px;font-weight:500;color:var(--muted);cursor:pointer;transition:all 0.25s;text-align:center;letter-spacing:0.3px;}
 .grade-btn:hover{border-color:var(--navy);color:var(--navy);}
-.grade-btn.active{background:var(--navy);border-color:var(--navy);color:white;}
+.grade-btn.active{background:linear-gradient(135deg,#1e3a5f,#2a5080);border-color:#1e3a5f;color:white;box-shadow:0 4px 15px rgba(30,58,95,0.3);}
 
 .upload-zone{border:2px dashed var(--border);border-radius:16px;padding:40px 24px;text-align:center;cursor:pointer;transition:all 0.25s;position:relative;}
 .upload-zone:hover,.upload-zone.dragover{border-color:var(--navy);background:var(--navy-pale);}
@@ -109,8 +109,8 @@ header{background:var(--navy);padding:12px 40px;display:flex;align-items:center;
 
 .error-box{background:#fff5f5;border:1.5px solid #f5c6c6;border-radius:12px;padding:14px 18px;color:var(--red);font-size:14px;display:none;margin-bottom:16px;}
 
-.btn-generate{width:100%;padding:18px;background:linear-gradient(135deg,var(--navy) 0%,var(--navy-light) 100%);color:white;border:none;border-radius:14px;font-family:"Playfair Display",serif;font-size:20px;cursor:pointer;transition:all 0.25s;margin-bottom:32px;letter-spacing:0.5px;border:2px solid transparent;}
-.btn-generate:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 10px 30px rgba(26,39,68,0.35);border-color:var(--gold);}
+.btn-generate{width:100%;padding:18px;background:linear-gradient(135deg,#1e3a5f 0%,#2a5080 100%);color:white;border:2px solid transparent;border-radius:14px;font-family:"Playfair Display",serif;font-size:20px;cursor:pointer;transition:all 0.25s;margin-bottom:32px;letter-spacing:0.5px;}
+.btn-generate:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 10px 30px rgba(30,58,95,0.35);border-color:var(--gold);}
 .btn-generate:disabled{opacity:0.5;cursor:not-allowed;}
 
 .loader{display:none;text-align:center;padding:44px 20px;}
@@ -126,7 +126,7 @@ header{background:var(--navy);padding:12px 40px;display:flex;align-items:center;
 #results{display:none;animation:fadeUp 0.5s ease;}
 @keyframes fadeUp{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:translateY(0);}}
 
-.results-header{background:linear-gradient(135deg,var(--navy) 0%,var(--navy-light) 100%);border-radius:20px;padding:26px 28px;margin-bottom:24px;color:white;}
+.results-header{background:linear-gradient(135deg,#1e3a5f 0%,#2a5080 100%);border-radius:20px;padding:26px 28px;margin-bottom:24px;color:white;box-shadow:0 8px 30px rgba(30,58,95,0.2);}
 .results-header h2{font-family:"Playfair Display",serif;font-size:22px;color:var(--gold-light);margin-bottom:6px;}
 .results-header p{font-size:14px;color:#aab5d5;margin-bottom:16px;}
 .result-actions{display:flex;gap:10px;flex-wrap:wrap;}
@@ -136,7 +136,7 @@ header{background:var(--navy);padding:12px 40px;display:flex;align-items:center;
 .btn-outline-w:hover{background:rgba(255,255,255,0.1);}
 
 .result-block{margin-bottom:28px;border:1.5px solid var(--border);border-radius:20px;overflow:hidden;}
-.result-block-header{background:var(--navy);padding:14px 20px;display:flex;align-items:center;gap:14px;}
+.result-block-header{background:linear-gradient(135deg,#1e3a5f,#2a5080);padding:14px 20px;display:flex;align-items:center;gap:14px;}
 .result-block-header img{width:46px;height:46px;object-fit:cover;border-radius:8px;border:2px solid var(--gold);flex-shrink:0;}
 .rb-title{font-family:"Playfair Display",serif;font-size:16px;color:white;}
 .rb-sub{font-size:12px;color:#8899cc;}
@@ -147,6 +147,7 @@ header{background:var(--navy);padding:12px 40px;display:flex;align-items:center;
 .sec-icon{font-size:16px;}
 .sec-title{font-family:"Playfair Display",serif;font-size:14px;color:var(--navy);font-weight:700;}
 .sec-body{padding:18px 22px;font-size:14px;line-height:1.9;color:var(--text);}
+.sec-body p{margin-bottom:4px;}
 .sec-body h3,.sec-body strong{color:var(--navy);font-weight:700;}
 .sec-body .q{font-weight:700;color:var(--navy);margin-top:10px;display:block;}
 .sec-body .a{color:var(--text);margin-bottom:6px;display:block;padding-left:12px;}
@@ -164,7 +165,7 @@ header{background:var(--navy);padding:12px 40px;display:flex;align-items:center;
 /* ── TEACHER DASHBOARD ── */
 #teacherPage{display:none;}
 .dashboard-wrap{max-width:1000px;margin:0 auto;padding:36px 24px 80px;}
-.dashboard-header{background:linear-gradient(135deg,var(--navy),var(--navy-light));border-radius:20px;padding:28px 30px;margin-bottom:28px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;}
+.dashboard-header{background:linear-gradient(135deg,#1e3a5f,#2a5080);border-radius:20px;padding:28px 30px;margin-bottom:28px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;box-shadow:0 8px 30px rgba(30,58,95,0.2);}
 .dashboard-header h1{font-family:"Playfair Display",serif;font-size:26px;color:white;}
 .dashboard-header p{font-size:13px;color:#aab5d5;margin-top:4px;}
 .dash-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:24px;}
@@ -299,9 +300,9 @@ footer a{color:#8899cc;text-decoration:none;}
 
     <!-- Step 1: Grade -->
     <div class="step-card">
-      <div class="step-label">Step 1 — Select Your Grade</div>
+      <div class="step-label">Step 1 — Select Your Grade &nbsp;<span style="color:#c0392b;font-size:10px;letter-spacing:0;">* Required</span></div>
       <div class="grade-row">
-        <button class="grade-btn active" onclick="selectGrade(this,'grade1-8')">Grade 1 – 8</button>
+        <button class="grade-btn" onclick="selectGrade(this,'grade1-8')">Grade 1 – 8</button>
         <button class="grade-btn" onclick="selectGrade(this,'olevel')">O Level / Cambridge</button>
       </div>
     </div>
@@ -398,7 +399,7 @@ const API_ENDPOINT = '/api/generate';
 
 // ── STATE ────────────────────────────────────────────────
 let currentStudentId = '';
-let selectedGrade = 'grade1-8';
+let selectedGrade = '';
 let uploadedImages = [];
 let allResultTexts = [];
 let allResultData = [];
@@ -681,7 +682,7 @@ function generatePDF(resultsData, studentId, grade, dateStr, subject){
 }
 
 // ── UPLOAD ───────────────────────────────────────────────
-function selectGrade(btn,grade){document.querySelectorAll('.grade-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');selectedGrade=grade;}
+function selectGrade(btn,grade){document.querySelectorAll('.grade-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');selectedGrade=grade;checkReady();}
 function handleDrop(e){e.preventDefault();document.getElementById('uploadZone').classList.remove('dragover');addFiles(e.dataTransfer.files);}
 function handleFiles(files){addFiles(files);document.getElementById('fileInput').value='';}
 function addFiles(files){
@@ -714,7 +715,7 @@ function renderGrid(){
 }
 function checkReady(){
   const subject='auto';
-  document.getElementById('generateBtn').disabled=!(uploadedImages.length>0 && currentStudentId);
+  document.getElementById('generateBtn').disabled=!(uploadedImages.length>0 && currentStudentId && selectedGrade!=='');
 }
 function showError(msg){const box=document.getElementById('errorBox');box.textContent=msg;box.style.display='block';setTimeout(()=>box.style.display='none',6000);}
 function setProgress(current,total){
