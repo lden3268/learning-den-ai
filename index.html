@@ -699,13 +699,25 @@ async function doGenerate(){
 }
 
 async function readOneImage(img, idx, total){
-  var prompt = "You are carefully reading image " + idx + " of " + total + " from a student textbook.\n\nDo TWO things:\n\n1. EXTRACT: Copy ALL text from the image word for word.\n\n2. MARK QUESTIONS: Find EVERY question or exercise in the image. This includes:\n- Any sentence ending with ?\n- Numbered items: 1. 2. 3. or i. ii. iii. or Q1 Q2 etc\n- Fill in the blank sentences (with ___ gaps)\n- Assessment or exercise sections\n- Activity questions\n\nFor each question found, write it on a new line starting with [BOOKQ]\nExample: [BOOKQ] i. _____ was the founder of the Mauryan Empire.\nExample: [BOOKQ] Why was the Arthashastra an important discovery?\n\nDo NOT miss any question. Output everything.";
+  var prompt = "You are carefully reading page " + idx + " of " + total + " from a student textbook.\n\n" +
+    "Do the following two tasks:\n\n" +
+    "TASK 1 - EXTRACT TEXT:\n" +
+    "Copy ALL visible text from the image exactly as written. Include all headings, paragraphs, captions, labels, and box text.\n\n" +
+    "TASK 2 - IDENTIFY EXERCISE QUESTIONS:\n" +
+    "Look for any questions that a student is expected to answer. These appear as:\n" +
+    "  - Numbered or lettered lists inside boxes or shaded sections\n" +
+    "  - Sections labelled: Assessment, Exercises, Practice, Review, Activities, Questions, End of Chapter, Recall, Check Your Understanding\n" +
+    "  - Fill in the blank items (sentences with ___ or blank spaces)\n" +
+    "  - Clearly listed tasks like: Define, Explain, Compare, Evaluate, Discuss, Give reasons\n" +
+    "Mark each such question by writing [BOOKQ] before it.\n" +
+    "Do NOT mark normal body text, headings, or informational sentences as [BOOKQ].\n\n" +
+    "Output everything word for word.";
   var res = await fetch("/api/generate",{
     method:"POST",
     headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({model:"claude-opus-4-5",max_tokens:2000,messages:[{role:"user",content:[
-      {type:"image",source:{type:"base64",media_type:img.mime,data:img.base64}},
-      {type:"text",text:prompt}
+    body:JSON.stringify({model:"claude-opus-4-5", max_tokens:2000, messages:[{role:"user", content:[
+      {type:"image", source:{type:"base64", media_type:img.mime, data:img.base64}},
+      {type:"text", text:prompt}
     ]}]})
   });
   var data = await res.json();
@@ -715,38 +727,132 @@ async function readOneImage(img, idx, total){
 
 async function generateUnified(rawTexts, chapter){
   var gradeLabel = selGrade === "olevel" ? "O Level" : "Grade " + selSub;
-  var chCtx = chapter ? " Topic: " + chapter + "." : "";
-
-  // Step 1: Already have rawTexts from readOneImage
-  // Step 2: Send all text + a focused book-questions extraction to Opus
+  var gradeNum = selGrade === "olevel" ? 10 : parseInt(selSub) || 7;
+  var chCtx = chapter ? "Chapter/Topic: " + chapter + "." : "";
   var combined = rawTexts.map(function(t,i){ return "=== IMAGE " + (i+1) + " ===\n" + t; }).join("\n\n");
 
-  var prompt = "You are an expert teacher at Learning DEN academy.\n" +
-    "Subject: " + selSubject + ". Grade: " + gradeLabel + "." + chCtx + "\n\n" +
-    "Extracted content from " + rawTexts.length + " textbook image(s):\n\n" + combined + "\n\n" +
-    "IMPORTANT: The extracted content above contains [BOOKQ] markers before every question found in the images. " +
-    "These include fill in the blanks, numbered questions, assessment questions etc.\n\n" +
-    "Generate the complete study set in PLAIN TEXT only. No asterisks, no markdown.\n\n" +
-    "---KEY POINTS---\n" +
-    "List all important facts numbered.\n\n" +
-    "---SUMMARY NOTES---\n" +
-    "Clear structured summary of all content.\n\n" +
-    "---EXAM Q&A---\n" +
-    "10-12 exam questions with full answers.\n" +
-    "Q1: [question] [EASY/MEDIUM/HARD]\n" +
-    "A1: [full answer]\n\n" +
-    "---FILL IN THE BLANKS---\n" +
-    "10 fill in the blank questions based on the content.\n" +
-    "1. ________ (Answer: ...)\n\n" +
-    "---ADDITIONAL NOTES---\n" +
-    "Key definitions, dates, important names, memory tips.\n\n" +
+  var subj = selSubject;
+  var isLit = subj === "English" || subj === "Urdu";
+  var isScience = subj === "Science" || subj === "Biology" || subj === "Chemistry" || subj === "Physics";
+  var isHist = subj === "History" || subj === "Geography" || subj === "Pak Studies" || subj === "Islamiyat";
+  var isMath = subj === "Maths";
+  var isJunior = gradeNum <= 5;
+  var isMid = gradeNum >= 6 && gradeNum <= 8;
+
+  // Educator mindset: depth scales with grade, but always enough to guarantee A grade
+  var depthNote = isJunior
+    ? "The student is in Grade " + gradeNum + ". Use clear simple language. Answers should be complete enough to fully explain the concept but not use complex vocabulary. Think: what would a top Grade " + gradeNum + " student write to get full marks?"
+    : isMid
+    ? "The student is in Grade " + gradeNum + ". Answers should be detailed, well-structured, and use subject-specific terminology. Think: what would a student who scores A grade write in their exam?"
+    : "This is O Level standard. Answers must be thorough, analytical, and examiner-ready.";
+
+  var examSections = "";
+
+  if(isLit){
+    examSections =
+      "---KEY POINTS---\n" +
+      "List the most important points about this text, poem, or chapter. Include themes, characters, key events, and literary significance.\n\n" +
+      "---SUMMARY NOTES---\n" +
+      "Write a thorough summary of the passage or poem. Then list all Literary Devices used with the exact line or quote as evidence and explanation of its effect.\n\n" +
+      "---EXAM Q&A---\n" +
+      "Generate a mix of question types that appear in exams for this subject:\n" +
+      "- Extended Response Questions (ERQ): require a full essay-style answer with evidence\n" +
+      "- Short Response Questions (CRQ): require a focused paragraph answer\n" +
+      "- Reference to Context (RTC): quote a line from the text and ask the student to explain its meaning and significance\n" +
+      "Write 8 to 10 questions total. For each:\n" +
+      "Q1: [question] [ERQ/CRQ/RTC]\n" +
+      "A1: [complete model answer that would score full marks]\n\n" +
+      "---FILL IN THE BLANKS---\n" +
+      "Write 8 fill in the blank questions testing vocabulary, themes, and key facts from the text.\n" +
+      "1. The poem uses the device of ________ to convey the theme of loss. (Answer: metaphor)\n\n" +
+      "---ADDITIONAL NOTES---\n" +
+      "List key vocabulary with meanings. Note the tone, mood, and style. Add any exam tips specific to this text.\n\n";
+  } else if(isMath){
+    examSections =
+      "---KEY POINTS---\n" +
+      "List all formulas, rules, and concepts shown in the images numbered clearly.\n\n" +
+      "---SUMMARY NOTES---\n" +
+      "Explain each concept clearly with a worked example. Show step by step working.\n\n" +
+      "---EXAM Q&A---\n" +
+      "Write 10 practice questions that cover all concepts shown. Include easy, medium and hard difficulty. Show full step by step solutions.\n" +
+      "Q1: [question] [EASY/MEDIUM/HARD]\n" +
+      "A1: [full step by step solution]\n\n" +
+      "---FILL IN THE BLANKS---\n" +
+      "Write 8 fill in the blank questions testing formulas, rules and key terms.\n" +
+      "1. ________ (Answer: ...)\n\n" +
+      "---ADDITIONAL NOTES---\n" +
+      "Key formulas to memorise. Common mistakes to avoid. Exam tips.\n\n";
+  } else if(isHist && isMid){
+    examSections =
+      "---KEY POINTS---\n" +
+      "List all key facts, events, dates, people, places, and causes/effects numbered clearly.\n\n" +
+      "---SUMMARY NOTES---\n" +
+      "Write a detailed organised summary covering all topics. Use clear headings for different sections of the content. Include dates, names, and significance of events.\n\n" +
+      "---EXAM Q&A---\n" +
+      "Write 10 to 12 exam questions that an educator would set for this topic. Include:\n" +
+      "- Knowledge questions: Who, What, When, Where\n" +
+      "- Understanding questions: Why, How, Explain\n" +
+      "- Analysis questions: What were the causes/effects, How significant was...\n" +
+      "- Evaluation questions: Do you agree that..., Was X more important than Y...\n" +
+      "For each question write a complete model answer with specific facts, names and dates.\n" +
+      "Q1: [question] [EASY/MEDIUM/HARD]\n" +
+      "A1: [detailed answer with evidence]\n\n" +
+      "---FILL IN THE BLANKS---\n" +
+      "Write 10 fill in the blank sentences using the most important names, dates, and facts from the content.\n" +
+      "1. ________ (Answer: ...)\n\n" +
+      "---ADDITIONAL NOTES---\n" +
+      "Timeline of key dates. List of important people and their roles. Key terms and definitions. Memory tips for exam.\n\n";
+  } else if(isScience){
+    examSections =
+      "---KEY POINTS---\n" +
+      "List all scientific facts, definitions, processes, and concepts numbered clearly.\n\n" +
+      "---SUMMARY NOTES---\n" +
+      "Explain all concepts clearly. Include processes, diagrams described in words, cause and effect relationships, and scientific reasoning.\n\n" +
+      "---EXAM Q&A---\n" +
+      "Write 10 to 12 science exam questions. Include definition questions, explain how/why questions, application questions, and diagram/label questions if relevant.\n" +
+      "Q1: [question] [EASY/MEDIUM/HARD]\n" +
+      "A1: [precise scientific answer with correct terminology]\n\n" +
+      "---FILL IN THE BLANKS---\n" +
+      "Write 10 fill in the blank questions testing scientific terms, processes and facts.\n" +
+      "1. ________ (Answer: ...)\n\n" +
+      "---ADDITIONAL NOTES---\n" +
+      "Key definitions and scientific terms. Important formulas or equations. Diagrams described. Common exam mistakes.\n\n";
+  } else {
+    examSections =
+      "---KEY POINTS---\n" +
+      "List all important facts and concepts numbered clearly.\n\n" +
+      "---SUMMARY NOTES---\n" +
+      "Write a thorough well organised summary of all content covering every topic in the images.\n\n" +
+      "---EXAM Q&A---\n" +
+      "Write 10 to 12 exam questions with complete model answers. Tag each EASY MEDIUM or HARD.\n" +
+      "Q1: [question] [EASY/MEDIUM/HARD]\n" +
+      "A1: [complete answer]\n\n" +
+      "---FILL IN THE BLANKS---\n" +
+      "Write 10 fill in the blank questions from the content.\n" +
+      "1. ________ (Answer: ...)\n\n" +
+      "---ADDITIONAL NOTES---\n" +
+      "Key terms, definitions, formulas, and exam tips.\n\n";
+  }
+
+  var prompt =
+    "You are a master educator at Learning DEN academy with 20 years of experience helping students ace exams.\n" +
+    "Subject: " + subj + ". Grade: " + gradeLabel + ". " + chCtx + "\n" +
+    depthNote + "\n\n" +
+    "Content from " + rawTexts.length + " textbook image(s):\n\n" + combined + "\n\n" +
+    "YOUR GOAL: Create study material so thorough and well-crafted that a student who studies only this material is GUARANTEED to score an A grade.\n\n" +
+    "RULES:\n" +
+    "1. Use PLAIN TEXT only. No asterisks, no dashes, no markdown symbols.\n" +
+    "2. Write neatly using numbers and clear labels.\n" +
+    "3. Every answer must be complete. Never leave a student wondering.\n" +
+    "4. Use the correct level of depth for this grade and subject.\n\n" +
+    examSections +
     "---BOOK QUESTIONS---\n" +
-    "Find every line starting with [BOOKQ] in the extracted content above. " +
-    "Write out each question and give a complete detailed answer. " +
-    "Do not skip any. Number them BQ1 BQ2 etc.\n" +
-    "BQ1: [question]\n" +
-    "BA1: [full answer]\n" +
-    "If no [BOOKQ] found write: None found.";
+    "Find every line in the extracted content above that starts with [BOOKQ].\n" +
+    "These are real textbook exercise and assessment questions from the images.\n" +
+    "Write each question out exactly as it appears and provide a complete model answer that would score full marks.\n" +
+    "BQ1: [question exactly as in textbook]\n" +
+    "BA1: [complete model answer]\n" +
+    "Continue for all [BOOKQ] items. If none were found write: None found.";
 
   var res = await fetch("/api/generate",{
     method:"POST",
@@ -862,19 +968,19 @@ function buildPDF(data, sName, sId, grade, subject, chapter, dateStr){
   }
   function section(title, rawContent){
     var c = strip(rawContent||""); if(!c) return;
-    newPage();
+    need(20);
+    y += 4;
     pdf.setFillColor(NAVY[0],NAVY[1],NAVY[2]); pdf.rect(M,y,W,11,"F");
     pdf.setFont("helvetica","bold"); pdf.setFontSize(10); setC(WH);
-    pdf.text(title, M+5, y+7.8); y += 16;
+    pdf.text(title, M+5, y+7.8); y += 15;
     c.split("\n").forEach(function(ln){
-      ln = ln.trim(); if(!ln){ y+=2; return; }
+      ln = ln.trim(); if(!ln){ y+=1.5; return; }
       var d = ln.replace(/\[EASY\]/gi," [Easy]").replace(/\[MEDIUM\]/gi," [Med]").replace(/\[HARD\]/gi," [Hard]");
-      if(/^(Q[0-9]+:|BQ[0-9]+:)/i.test(ln)){ y+=2; writeLine(d,10,"bold",INK,0); }
-      else if(/^(A[0-9]+:|BA[0-9]+:)/i.test(ln)){ writeLine(d,10,"normal",INK,6); y+=1; }
+      if(/^(Q[0-9]+:|BQ[0-9]+:)/i.test(ln)){ y+=3; writeLine(d,10,"bold",INK,0); }
+      else if(/^(A[0-9]+:|BA[0-9]+:)/i.test(ln)){ writeLine(d,10,"normal",INK,6); y+=2; }
       else{ writeLine(d,10,"normal",INK,0); }
     });
   }
-  drawPage(1,1);
   section("KEY POINTS", data.keypoints);
   section("SUMMARY NOTES", data.summary);
   section("EXAM Q & A", data.qanda);
