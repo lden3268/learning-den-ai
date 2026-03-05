@@ -99,12 +99,26 @@ header{background:linear-gradient(135deg,var(--navy) 0%,var(--navy2) 100%);paddi
   .upload-zone{padding:12px 14px;margin-bottom:0;border:none;background:transparent;cursor:default;}
   .upload-zone:hover,.upload-zone.drag{border-color:var(--border);background:transparent;}
   .upload-zone input[id="fileInput"]{display:none;}
-  .mobile-upload-btns{display:flex;gap:10px;margin-bottom:12px;}
-  .mob-btn{flex:1;display:flex;align-items:center;justify-content:center;gap:8px;padding:14px 10px;border:none;border-radius:13px;font-family:"DM Sans",sans-serif;font-size:15px;font-weight:600;cursor:pointer;transition:all 0.2s;}
-  .mob-btn-camera{background:linear-gradient(135deg,var(--navy),var(--navy2));color:white;}
-  .mob-btn-camera:active{opacity:0.85;}
-  .mob-btn-gallery{background:var(--gold);color:var(--navy);}
-  .mob-btn-gallery:active{opacity:0.85;}
+  .mobile-upload-btns{display:flex;gap:12px;margin-bottom:16px;padding:0 2px;}
+  .mob-btn{
+    flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    gap:10px;padding:22px 12px 18px;border:none;border-radius:28px;cursor:pointer;
+    font-family:"DM Sans",sans-serif;font-size:13px;font-weight:700;letter-spacing:0.4px;
+    text-transform:uppercase;-webkit-tap-highlight-color:transparent;
+    transition:transform 0.13s cubic-bezier(.4,0,.2,1),box-shadow 0.13s;
+  }
+  .mob-btn svg{width:34px;height:34px;display:block;}
+  .mob-btn-camera{
+    background:linear-gradient(150deg,#1b3d6e 0%,#1e5a8a 55%,#1a7aaa 100%);
+    color:rgba(255,255,255,0.92);
+    box-shadow:0 8px 28px rgba(30,58,95,0.45),inset 0 1px 0 rgba(255,255,255,0.12);
+  }
+  .mob-btn-gallery{
+    background:linear-gradient(150deg,#c47f1a 0%,#d9993a 55%,#e8b84b 100%);
+    color:rgba(255,255,255,0.95);
+    box-shadow:0 8px 28px rgba(201,148,58,0.45),inset 0 1px 0 rgba(255,255,255,0.18);
+  }
+  .mob-btn:active{transform:scale(0.94);box-shadow:0 3px 10px rgba(0,0,0,0.2);}
 }
 .upload-zone p{font-size:13px;color:var(--muted);}
 .badge-gold{display:inline-block;margin-top:9px;background:var(--gold);color:white;font-size:11px;font-weight:700;padding:3px 12px;border-radius:20px;}
@@ -336,8 +350,14 @@ footer{background:var(--navy);text-align:center;padding:28px 20px;border-top:2px
 
       <div class="step-card" style="padding:0;overflow:hidden;">
         <div class="mobile-upload-btns">
-          <button class="mob-btn mob-btn-camera" onclick="document.getElementById('cameraInput').click()">&#128247; Take Photo</button>
-          <button class="mob-btn mob-btn-gallery" onclick="document.getElementById('galleryInput').click()">&#128248; Upload from Gallery</button>
+          <button class="mob-btn mob-btn-camera" onclick="document.getElementById('cameraInput').click()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+            Take Photo
+          </button>
+          <button class="mob-btn mob-btn-gallery" onclick="document.getElementById('galleryInput').click()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="4"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+            Upload Gallery
+          </button>
           <input type="file" id="cameraInput" accept="image/*" capture="environment" multiple style="display:none" onchange="onFiles(this.files)">
           <input type="file" id="galleryInput" accept="image/*" multiple style="display:none" onchange="onFiles(this.files)">
         </div>
