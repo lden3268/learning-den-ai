@@ -664,13 +664,8 @@ async function doGenerate(){
   var total = uploadedImages.length;
   var chapter = document.getElementById("chapterInput").value.trim();
   try{
-    var rawTexts = [];
-    for(var i = 0; i < total; i++){
-      setProg(Math.round(((i+1)/total)*50), "Reading image " + (i+1) + " of " + total + "...");
-      rawTexts.push(await readOneImage(uploadedImages[i], i+1, total));
-    }
-    setProg(65, "Analysing all " + total + " image(s) together...");
-    var unified = await generateUnified(rawTexts, chapter);
+    setProg(30, "Analysing " + total + " image(s)...");
+    var unified = await generateFromImages(uploadedImages, chapter);
     setProg(90, "Preparing your study material...");
     var parsed = parseResult(unified);
     allResultData = [parsed];
@@ -698,38 +693,11 @@ async function doGenerate(){
   checkReady();
 }
 
-async function readOneImage(img, idx, total){
-  var prompt = "You are carefully reading page " + idx + " of " + total + " from a student textbook.\n\n" +
-    "Do the following two tasks:\n\n" +
-    "TASK 1 - EXTRACT TEXT:\n" +
-    "Copy ALL visible text from the image exactly as written. Include all headings, paragraphs, captions, labels, and box text.\n\n" +
-    "TASK 2 - IDENTIFY EXERCISE QUESTIONS:\n" +
-    "Look for any questions that a student is expected to answer. These appear as:\n" +
-    "  - Numbered or lettered lists inside boxes or shaded sections\n" +
-    "  - Sections labelled: Assessment, Exercises, Practice, Review, Activities, Questions, End of Chapter, Recall, Check Your Understanding\n" +
-    "  - Fill in the blank items (sentences with ___ or blank spaces)\n" +
-    "  - Clearly listed tasks like: Define, Explain, Compare, Evaluate, Discuss, Give reasons\n" +
-    "Mark each such question by writing [BOOKQ] before it.\n" +
-    "Do NOT mark normal body text, headings, or informational sentences as [BOOKQ].\n\n" +
-    "Output everything word for word.";
-  var res = await fetch("/api/generate",{
-    method:"POST",
-    headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({model:"claude-opus-4-5", max_tokens:2000, messages:[{role:"user", content:[
-      {type:"image", source:{type:"base64", media_type:img.mime, data:img.base64}},
-      {type:"text", text:prompt}
-    ]}]})
-  });
-  var data = await res.json();
-  if(!res.ok) throw new Error(data.error ? data.error.message : "API error on image " + idx);
-  return data.content[0].text;
-}
-
-async function generateUnified(rawTexts, chapter){
+async function generateFromImages(images, chapter){
   var gradeLabel = selGrade === "olevel" ? "O Level" : "Grade " + selSub;
   var gradeNum = selGrade === "olevel" ? 10 : parseInt(selSub) || 7;
   var chCtx = chapter ? "Chapter/Topic: " + chapter + "." : "";
-  var combined = rawTexts.map(function(t,i){ return "=== IMAGE " + (i+1) + " ===\n" + t; }).join("\n\n");
+  var total = images.length;
 
   var subj = selSubject;
   var isLit = subj === "English" || subj === "Urdu";
@@ -837,8 +805,14 @@ async function generateUnified(rawTexts, chapter){
   var prompt =
     "You are a master educator at Learning DEN academy with 20 years of experience helping students ace exams.\n" +
     "Subject: " + subj + ". Grade: " + gradeLabel + ". " + chCtx + "\n" +
+    "You are looking at " + total + " textbook page image(s). Read every image carefully.\n" +
     depthNote + "\n\n" +
-    "Content from " + rawTexts.length + " textbook image(s):\n\n" + combined + "\n\n" +
+    "Also look for any exercise or assessment questions in the images. These appear as:\n" +
+    "  - Numbered or lettered items inside boxes or shaded sections\n" +
+    "  - Sections labelled: Assessment, Exercises, Practice, Review, Activities, Questions, End of Chapter, Recall, Check Your Understanding\n" +
+    "  - Fill in the blank items (sentences with ___ or blank spaces)\n" +
+    "  - Tasks like: Define, Explain, Compare, Evaluate, Discuss, Give reasons\n" +
+    "These go in the BOOK QUESTIONS section at the end.\n\n" +
     "YOUR GOAL: Create study material so thorough and well-crafted that a student who studies only this material is GUARANTEED to score an A grade.\n\n" +
     "RULES:\n" +
     "1. Use PLAIN TEXT only. No asterisks, no dashes, no markdown symbols.\n" +
@@ -847,17 +821,21 @@ async function generateUnified(rawTexts, chapter){
     "4. Use the correct level of depth for this grade and subject.\n\n" +
     examSections +
     "---BOOK QUESTIONS---\n" +
-    "Find every line in the extracted content above that starts with [BOOKQ].\n" +
-    "These are real textbook exercise and assessment questions from the images.\n" +
-    "Write each question out exactly as it appears and provide a complete model answer that would score full marks.\n" +
+    "Find every exercise/assessment question visible in the images.\n" +
+    "Write each question exactly as it appears and provide a complete model answer that would score full marks.\n" +
     "BQ1: [question exactly as in textbook]\n" +
     "BA1: [complete model answer]\n" +
-    "Continue for all [BOOKQ] items. If none were found write: None found.";
+    "Continue for all questions. If none found write: None found.";
+
+  var content = images.map(function(img){
+    return {type:"image", source:{type:"base64", media_type:img.mime, data:img.base64}};
+  });
+  content.push({type:"text", text:prompt});
 
   var res = await fetch("/api/generate",{
     method:"POST",
     headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({model:"claude-opus-4-5", max_tokens:4000, messages:[{role:"user", content:[{type:"text", text:prompt}]}]})
+    body:JSON.stringify({model:"claude-opus-4-6", max_tokens:6000, messages:[{role:"user", content:content}]})
   });
   var data = await res.json();
   if(!res.ok) throw new Error(data.error ? data.error.message : "API error on generation");
