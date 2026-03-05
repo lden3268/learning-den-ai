@@ -168,6 +168,27 @@ header{background:linear-gradient(135deg,var(--navy) 0%,var(--navy2) 100%);paddi
 .diff-m{display:inline-block;font-size:10px;font-weight:700;padding:2px 7px;border-radius:8px;margin-left:6px;background:#fff8e7;color:#c9943a;border:1px solid #f5e0a0;}
 .diff-e{display:inline-block;font-size:10px;font-weight:700;padding:2px 7px;border-radius:8px;margin-left:6px;background:#f0fff4;color:#2d6a4f;border:1px solid #b7e4c7;}
 .save-status{font-size:13px;color:var(--green);text-align:center;padding:8px;display:none;font-weight:500;}
+/* Options checklist chips */
+.options-box{margin-top:16px;padding-top:16px;border-top:1.5px solid var(--border);}
+.opt-chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;}
+.opt-chip{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border:1.5px solid var(--border);border-radius:30px;background:white;font-family:"DM Sans",sans-serif;font-size:13px;font-weight:500;color:var(--muted);cursor:pointer;transition:all 0.15s;-webkit-tap-highlight-color:transparent;user-select:none;}
+.opt-chip:hover{border-color:var(--navy);color:var(--navy);}
+.opt-chip.checked{background:linear-gradient(135deg,var(--navy),var(--navy2));border-color:var(--navy);color:white;}
+.opt-chip.locked{cursor:default;}
+.opt-chip svg{width:13px;height:13px;flex-shrink:0;opacity:0;transition:opacity 0.12s;}
+.opt-chip.checked svg{opacity:1;}
+/* Accordion result sections */
+.acc-item{margin-bottom:12px;border:1.5px solid var(--border);border-radius:18px;overflow:hidden;background:white;}
+.acc-head{background:var(--navy);padding:13px 18px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;-webkit-tap-highlight-color:transparent;}
+.acc-head-left{display:flex;align-items:center;gap:8px;}
+.acc-ico{font-size:15px;}
+.acc-ttl{font-family:"Playfair Display",serif;font-size:14px;color:white;}
+.acc-chevron{transition:transform 0.22s;flex-shrink:0;}
+.acc-head.open .acc-chevron{transform:rotate(180deg);}
+.acc-body{padding:0 18px;font-size:14px;line-height:1.7;color:var(--ink);display:none;}
+.acc-body.open{display:block;padding:14px 18px;}
+.acc-body .q{font-weight:700;color:var(--navy);margin-top:10px;display:block;}
+.acc-body .a{color:var(--ink);margin-bottom:5px;display:block;padding-left:12px;}
 .history-section{margin-top:42px;}
 .history-section h2{font-family:"Playfair Display",serif;font-size:20px;color:var(--navy);margin-bottom:16px;}
 .history-item{background:white;border:1.5px solid var(--border);border-radius:12px;padding:14px 18px;margin-bottom:9px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;}
@@ -347,6 +368,7 @@ footer{background:var(--navy);text-align:center;padding:28px 20px;border-top:2px
           <button class="sel-btn" onclick="pickSubject(this,'Economics')">Economics</button>
         </div>
         <input class="chapter-input" type="text" id="chapterInput" placeholder="Chapter / Topic (optional)">
+        <div id="optionsBox" class="options-box" style="display:none;"></div>
       </div>
 
       <div class="step-card" style="padding:0;overflow:hidden;">
@@ -655,10 +677,124 @@ function pickSub(btn, val){
   document.querySelectorAll("#subGradeRow .sel-btn").forEach(function(b){ b.classList.remove("active"); });
   btn.classList.add("active"); selSub = val; checkReady();
 }
+var SUBJECT_OPTIONS = {
+  'English':'lit','Urdu':'lit',
+  'Science':'science','Biology':'science','Chemistry':'science','Physics':'science',
+  'Maths':'maths',
+  'History':'history','Pak Studies':'history','Islamiyat':'history',
+  'Geography':'geography',
+  'Computer':'computer',
+  'Accounts':'accounts','Economics':'accounts'
+};
+var SUBJECT_OPTION_DEFS = {
+  lit:[
+    {key:'summary',label:'Summary',on:true,locked:true},
+    {key:'lit_devices',label:'Literary Devices',on:true},
+    {key:'erq',label:'ERQs',on:false},
+    {key:'crq',label:'CRQs',on:false},
+    {key:'rtc',label:'RTCs',on:false},
+    {key:'explanation',label:'Explanation of Verses',on:false}
+  ],
+  science:[
+    {key:'summary',label:'Summary',on:true,locked:true},
+    {key:'key_points',label:'Key Points',on:true},
+    {key:'mcqs',label:'MCQs',on:false},
+    {key:'qanda',label:'Q & A',on:false},
+    {key:'fill_blanks',label:'Fill in the Blanks',on:false}
+  ],
+  maths:[
+    {key:'summary',label:'Summary',on:true,locked:true},
+    {key:'key_formulas',label:'Key Formulas',on:true},
+    {key:'step_by_step',label:'Step-by-step Solutions',on:false},
+    {key:'practice',label:'Practice Problems',on:false},
+    {key:'mcqs',label:'MCQs',on:false}
+  ],
+  history:[
+    {key:'summary',label:'Summary',on:true,locked:true},
+    {key:'key_points',label:'Key Points',on:true},
+    {key:'timeline',label:'Timeline',on:false},
+    {key:'causes_effects',label:'Causes & Effects',on:false},
+    {key:'key_figures',label:'Key Figures',on:false},
+    {key:'mcqs',label:'MCQs',on:false}
+  ],
+  geography:[
+    {key:'summary',label:'Summary',on:true,locked:true},
+    {key:'key_points',label:'Key Points',on:true},
+    {key:'case_studies',label:'Case Studies',on:false},
+    {key:'map_work',label:'Map Work',on:false},
+    {key:'mcqs',label:'MCQs',on:false},
+    {key:'qanda',label:'Q & A',on:false}
+  ],
+  computer:[
+    {key:'summary',label:'Summary',on:true,locked:true},
+    {key:'key_concepts',label:'Key Concepts',on:true},
+    {key:'mcqs',label:'MCQs',on:false},
+    {key:'qanda',label:'Q & A',on:false},
+    {key:'true_false',label:'True / False',on:false}
+  ],
+  accounts:[
+    {key:'summary',label:'Summary',on:true,locked:true},
+    {key:'key_terms',label:'Key Terms',on:true},
+    {key:'mcqs',label:'MCQs',on:false},
+    {key:'qanda',label:'Q & A',on:false},
+    {key:'numericals',label:'Numerical Problems',on:false}
+  ]
+};
+var OPTION_PROMPTS = {
+  summary:{marker:'SUMMARY',fn:function(isLit){return '---SUMMARY---\n'+(isLit?'Write a clear summary of the passage or poem covering the main themes, characters, and key events. Include tone, mood, and overall message.\n\n':'Write a well-organised summary covering all the main topics shown in the images.\n\n');}},
+  key_points:{marker:'KEY POINTS',fn:function(){return '---KEY POINTS---\nList all important facts, concepts, and key information numbered clearly.\n\n';}},
+  lit_devices:{marker:'LITERARY DEVICES',fn:function(){return '---LITERARY DEVICES---\nList each literary device found in the text. For each device:\n- Device name\n- Exact quote from the text\n- Effect: what feeling or meaning it creates for the reader\nCover at least 8 devices.\n\n';}},
+  erq:{marker:'ERQ',fn:function(){return '---ERQ---\nWrite 3 Extended Response Questions (ERQs).\nFormat:\nQ: [essay-style question]\nA: [Full model answer: (1) Intro paragraph with a clear argument (2) 2-3 body paragraphs each with a Point, textual Evidence/Quote, and Explanation of effect (3) Conclusion evaluating and linking back to the question]\n\n';}},
+  crq:{marker:'CRQ',fn:function(){return '---CRQ---\nWrite 5 Short Response Questions (CRQs).\nFormat:\nQ: [focused question about the text]\nA: [Focused paragraph: Point + textual evidence/quote + brief explanation. 3-5 sentences.]\n\n';}},
+  rtc:{marker:'RTC',fn:function(){return '---RTC---\nWrite 4 Reference to Context (RTC) questions.\nFormat:\nExtract: "[quote 1-3 lines from the text]"\nQ1: Who is speaking? What is the context at this point?\nQ2: Explain what this extract means in your own words.\nQ3: What is the effect of the language used?\nA1: [model answer]\nA2: [model answer]\nA3: [model answer]\n\n';}},
+  explanation:{marker:'EXPLANATION OF VERSES',fn:function(){return '---EXPLANATION OF VERSES---\nFor each key verse or stanza:\nVerse: "[exact verse]"\nParaphrase: [plain-language explanation]\nDeeper Meaning: [themes, emotions, or significance conveyed]\nLiterary Note: [devices used and their effect]\n\n';}},
+  mcqs:{marker:'MCQS',fn:function(){return '---MCQS---\nWrite 10 multiple choice questions covering the key content.\nQ1: [question]\nA) [option] B) [option] C) [option] D) [option]\nAnswer: [correct letter] — [brief reason]\n\n';}},
+  qanda:{marker:'Q AND A',fn:function(){return '---Q AND A---\nWrite 10 exam questions with complete model answers.\nQ1: [question] [EASY/MEDIUM/HARD]\nA1: [complete model answer with specific facts]\n\n';}},
+  fill_blanks:{marker:'FILL IN THE BLANKS',fn:function(){return '---FILL IN THE BLANKS---\nWrite 10 fill in the blank questions.\n1. [sentence with blank] (Answer: [correct word/phrase])\n\n';}},
+  timeline:{marker:'TIMELINE',fn:function(){return '---TIMELINE---\nList all key events in chronological order:\n[Date/Period] — [Event] — [Significance in one sentence]\n\n';}},
+  causes_effects:{marker:'CAUSES AND EFFECTS',fn:function(){return '---CAUSES AND EFFECTS---\nFor each major event or development:\nEvent: [name]\nCauses:\n1. ...\nEffects:\n1. ...\nLong-term Impact: [brief]\n\n';}},
+  key_figures:{marker:'KEY FIGURES',fn:function(){return '---KEY FIGURES---\nFor each important person:\nName: [full name]\nRole: [title/role]\nKey Contributions: [what they did and why it matters]\nImportant Dates: [relevant dates]\n\n';}},
+  key_formulas:{marker:'KEY FORMULAS',fn:function(){return '---KEY FORMULAS---\nList all formulas, rules, and mathematical concepts:\nFormula: [name]\nNotation: [formula]\nWhen to use: [brief explanation]\nWorked Example: [short example]\n\n';}},
+  step_by_step:{marker:'STEP BY STEP SOLUTIONS',fn:function(){return '---STEP BY STEP SOLUTIONS---\nSolve 5 representative problems from the content.\nProblem: [problem statement] [EASY/MEDIUM/HARD]\nStep 1: ...\nStep 2: ...\nFinal Answer: [answer with units if applicable]\n\n';}},
+  practice:{marker:'PRACTICE PROBLEMS',fn:function(){return '---PRACTICE PROBLEMS---\nWrite 10 practice problems across easy, medium and hard difficulty.\nQ1: [problem] [EASY/MEDIUM/HARD]\nA1: [full step-by-step solution]\n\n';}},
+  case_studies:{marker:'CASE STUDIES',fn:function(){return '---CASE STUDIES---\nFor each case study or real-world example:\nTitle/Location: [name]\nKey Facts: [bullet points]\nCauses: [if applicable]\nEffects/Outcomes: [bullet points]\nExam Tip: [what examiners typically ask]\n\n';}},
+  map_work:{marker:'MAP WORK',fn:function(){return '---MAP WORK---\nDescribe all map-related and geographic content:\n- Key locations and their significance\n- Physical features (mountains, rivers, etc.)\n- Human features (cities, industries, etc.)\n- Facts students must know for map/diagram questions\n\n';}},
+  key_concepts:{marker:'KEY CONCEPTS',fn:function(){return '---KEY CONCEPTS---\nList and define all key concepts and terminology:\nTerm: [term]\nDefinition: [clear, accurate definition]\nExample: [practical example if applicable]\n\n';}},
+  true_false:{marker:'TRUE OR FALSE',fn:function(){return '---TRUE OR FALSE---\nWrite 10 true/false questions.\n1. [statement] (Answer: True/False — [brief explanation of why])\n\n';}},
+  key_terms:{marker:'KEY TERMS',fn:function(){return '---KEY TERMS---\nList all key terms and definitions:\nTerm: [term]\nDefinition: [clear definition]\nExample: [practical or numerical example if applicable]\n\n';}},
+  numericals:{marker:'NUMERICAL PROBLEMS',fn:function(){return '---NUMERICAL PROBLEMS---\nWrite 6 numerical/calculation problems with full solutions.\nQ1: [problem with all values given]\nSolution:\nStep 1: [formula/method]\nStep 2: [calculation]\nAnswer: [final answer with units]\n\n';}}
+};
+
 function pickSubject(btn, val){
   document.querySelectorAll("#subjectRow .sel-btn").forEach(function(b){ b.classList.remove("active"); });
-  btn.classList.add("active"); selSubject = val; checkReady();
+  btn.classList.add("active"); selSubject = val;
+  renderOptionsChecklist(val);
+  checkReady();
 }
+function renderOptionsChecklist(subject){
+  var group = SUBJECT_OPTIONS[subject];
+  var box = document.getElementById('optionsBox');
+  if(!group){ box.style.display='none'; return; }
+  var defs = SUBJECT_OPTION_DEFS[group] || [];
+  var html = '<div class="step-label" style="margin-top:0;">What do you want?</div><div class="opt-chips">';
+  defs.forEach(function(opt){
+    var chk = opt.on ? ' checked' : '';
+    var lck = opt.locked ? ' locked' : '';
+    html += '<button type="button" class="opt-chip'+chk+lck+'" data-key="'+opt.key+'" onclick="toggleOpt(this)">'+
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> '+
+      opt.label+'</button>';
+  });
+  html += '</div>';
+  box.innerHTML = html;
+  box.style.display = 'block';
+}
+function toggleOpt(btn){ if(!btn.classList.contains('locked')) btn.classList.toggle('checked'); }
+function getCheckedOptions(){
+  var checked = [];
+  document.querySelectorAll('.opt-chip.checked').forEach(function(b){ checked.push(b.getAttribute('data-key')); });
+  return checked;
+}
+function toggleAcc(head){ head.classList.toggle('open'); head.nextElementSibling.classList.toggle('open'); }
 
 function onDrop(e){
   e.preventDefault();
@@ -757,7 +893,7 @@ async function doGenerate(){
       "<button class=\"btn-gold\" onclick=\"doPDF()\">&#8595; Download PDF</button>" +
       "<button class=\"btn-ow\" onclick=\"doCopy(this)\">Copy All</button>" +
       "</div>";
-    var blk = document.createElement("div"); blk.className = "result-block";
+    var blk = document.createElement("div");
     blk.innerHTML = renderSections(parsed);
     ra.appendChild(hd); ra.appendChild(blk);
     ra.style.display = "block";
@@ -792,93 +928,13 @@ async function generateFromImages(images, chapter){
     ? "The student is in Grade " + gradeNum + ". Answers should be detailed, well-structured, and use subject-specific terminology. Think: what would a student who scores A grade write in their exam?"
     : "This is O Level standard. Answers must be thorough, analytical, and examiner-ready.";
 
+  var checkedOpts = getCheckedOptions();
+  if(!checkedOpts.length) checkedOpts = ['summary','key_points'];
   var examSections = "";
-
-  if(isLit){
-    examSections =
-      "---KEY POINTS---\n" +
-      "List the most important points about this text, poem, or chapter. Include themes, characters, key events, and literary significance.\n\n" +
-      "---SUMMARY NOTES---\n" +
-      "Write a clear summary of the passage or poem covering the main themes, characters, and key events. List the main literary devices with a supporting quote and brief explanation of each effect.\n\n" +
-      "---EXAM Q&A---\n" +
-      "Generate a mix of question types that appear in exams for this subject:\n" +
-      "- Extended Response Questions (ERQ): require a full essay-style answer with evidence\n" +
-      "- Short Response Questions (CRQ): require a focused paragraph answer\n" +
-      "- Reference to Context (RTC): quote a line from the text and ask the student to explain its meaning and significance\n" +
-      "Write 8 to 10 questions total. For each:\n" +
-      "Q1: [question] [ERQ/CRQ/RTC]\n" +
-      "A1: [complete model answer that would score full marks]\n\n" +
-      "---FILL IN THE BLANKS---\n" +
-      "Write 8 fill in the blank questions testing vocabulary, themes, and key facts from the text.\n" +
-      "1. The poem uses the device of ________ to convey the theme of loss. (Answer: metaphor)\n\n" +
-      "---ADDITIONAL NOTES---\n" +
-      "List key vocabulary with meanings. Note the tone, mood, and style. Add any exam tips specific to this text.\n\n";
-  } else if(isMath){
-    examSections =
-      "---KEY POINTS---\n" +
-      "List all formulas, rules, and concepts shown in the images numbered clearly.\n\n" +
-      "---SUMMARY NOTES---\n" +
-      "Explain each concept clearly with a worked example showing the key steps.\n\n" +
-      "---EXAM Q&A---\n" +
-      "Write 10 practice questions that cover all concepts shown. Include easy, medium and hard difficulty. Show full step by step solutions.\n" +
-      "Q1: [question] [EASY/MEDIUM/HARD]\n" +
-      "A1: [full step by step solution]\n\n" +
-      "---FILL IN THE BLANKS---\n" +
-      "Write 8 fill in the blank questions testing formulas, rules and key terms.\n" +
-      "1. ________ (Answer: ...)\n\n" +
-      "---ADDITIONAL NOTES---\n" +
-      "Key formulas to memorise. Common mistakes to avoid. Exam tips.\n\n";
-  } else if(isHist && isMid){
-    examSections =
-      "---KEY POINTS---\n" +
-      "List all key facts, events, dates, people, places, and causes/effects numbered clearly.\n\n" +
-      "---SUMMARY NOTES---\n" +
-      "Write a well-organised summary using clear headings. Cover the key events, people, dates, and their significance.\n\n" +
-      "---EXAM Q&A---\n" +
-      "Write 10 to 12 exam questions that an educator would set for this topic. Include:\n" +
-      "- Knowledge questions: Who, What, When, Where\n" +
-      "- Understanding questions: Why, How, Explain\n" +
-      "- Analysis questions: What were the causes/effects, How significant was...\n" +
-      "- Evaluation questions: Do you agree that..., Was X more important than Y...\n" +
-      "For each question write a complete model answer with specific facts, names and dates.\n" +
-      "Q1: [question] [EASY/MEDIUM/HARD]\n" +
-      "A1: [detailed answer with evidence]\n\n" +
-      "---FILL IN THE BLANKS---\n" +
-      "Write 10 fill in the blank sentences using the most important names, dates, and facts from the content.\n" +
-      "1. ________ (Answer: ...)\n\n" +
-      "---ADDITIONAL NOTES---\n" +
-      "Timeline of key dates. List of important people and their roles. Key terms and definitions. Memory tips for exam.\n\n";
-  } else if(isScience){
-    examSections =
-      "---KEY POINTS---\n" +
-      "List all scientific facts, definitions, processes, and concepts numbered clearly.\n\n" +
-      "---SUMMARY NOTES---\n" +
-      "Explain each concept clearly, covering the key processes, cause-effect relationships, and scientific reasoning.\n\n" +
-      "---EXAM Q&A---\n" +
-      "Write 10 to 12 science exam questions. Include definition questions, explain how/why questions, application questions, and diagram/label questions if relevant.\n" +
-      "Q1: [question] [EASY/MEDIUM/HARD]\n" +
-      "A1: [precise scientific answer with correct terminology]\n\n" +
-      "---FILL IN THE BLANKS---\n" +
-      "Write 10 fill in the blank questions testing scientific terms, processes and facts.\n" +
-      "1. ________ (Answer: ...)\n\n" +
-      "---ADDITIONAL NOTES---\n" +
-      "Key definitions and scientific terms. Important formulas or equations. Diagrams described. Common exam mistakes.\n\n";
-  } else {
-    examSections =
-      "---KEY POINTS---\n" +
-      "List all important facts and concepts numbered clearly.\n\n" +
-      "---SUMMARY NOTES---\n" +
-      "Write a well-organised summary covering all main topics in the images.\n\n" +
-      "---EXAM Q&A---\n" +
-      "Write 10 to 12 exam questions with complete model answers. Tag each EASY MEDIUM or HARD.\n" +
-      "Q1: [question] [EASY/MEDIUM/HARD]\n" +
-      "A1: [complete answer]\n\n" +
-      "---FILL IN THE BLANKS---\n" +
-      "Write 10 fill in the blank questions from the content.\n" +
-      "1. ________ (Answer: ...)\n\n" +
-      "---ADDITIONAL NOTES---\n" +
-      "Key terms, definitions, formulas, and exam tips.\n\n";
-  }
+  checkedOpts.forEach(function(key){
+    var def = OPTION_PROMPTS[key];
+    if(def) examSections += def.fn(isLit, isMath, isHist, isScience);
+  });
 
   var prompt =
     "You are a master educator at Learning DEN academy with 20 years of experience helping students ace exams.\n" +
@@ -922,58 +978,88 @@ async function generateFromImages(images, chapter){
 }
 
 function parseResult(text){
-  // Match section headers with or without surrounding dashes e.g. ---KEY POINTS--- or KEY POINTS
-  function flex(name){ return "-*\\s*" + name.replace(/\s+/g,"\\s+") + "\\s*-*"; }
-  function get(fromName, toName){
-    var rx = new RegExp(flex(fromName) + "\\s*\\n([\\s\\S]*?)(?=" + flex(toName) + "|$)","i");
-    var m = text.match(rx);
-    return m ? m[1].trim() : "";
+  var sections = {};
+  var rx = /---([^-\n]+?)---[ \t]*\n([\s\S]*?)(?=\n---[^-\n]+?---|$)/g;
+  var m;
+  while((m = rx.exec(text)) !== null){
+    var key = m[1].trim();
+    if(key) sections[key] = m[2].trim();
   }
-  return {
-    keypoints:  get("KEY POINTS",        "SUMMARY NOTES"),
-    summary:    get("SUMMARY NOTES",     "EXAM Q&A"),
-    qanda:      get("EXAM Q&A",          "FILL IN THE BLANKS"),
-    fillblanks: get("FILL IN THE BLANKS","ADDITIONAL NOTES"),
-    additional: get("ADDITIONAL NOTES",  "BOOK QUESTIONS"),
-    bookqs: (function(){ var m=text.match(/-*\s*BOOK QUESTIONS\s*-*\s*\n([\s\S]*)$/i); return m?m[1].trim():""; })()
-  };
+  return sections;
 }
 
 function clean(t){ return (t||"").replace(/\*\*\*/g,"").replace(/\*\*/g,"").replace(/\*/g,"").trim(); }
 function esc(s){ return (s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
 
-function renderSections(p){
-  var html = "";
-  function sec(icon, title, content){
-    var c = clean(content); if(!c) return "";
-    var lines = c.split("\n").map(function(line){
-      line = line.trim(); if(!line) return "";
-      var d = esc(line)
-        .replace(/\[HARD\]/gi,"<span class=\"diff-h\">HARD</span>")
-        .replace(/\[MEDIUM\]/gi,"<span class=\"diff-m\">MED</span>")
-        .replace(/\[EASY\]/gi,"<span class=\"diff-e\">EASY</span>");
-      if(/^(Q[0-9]+:|BQ[0-9]+:)/i.test(line)) return "<span class=\"q\">" + d + "</span>";
-      if(/^(A[0-9]+:|BA[0-9]+:)/i.test(line)) return "<span class=\"a\">" + d + "</span>";
-      return d;
-    }).join("\n");
-    return "<div class=\"sec-head\"><span class=\"sec-ico\">" + icon + "</span><span class=\"sec-ttl\">" + title + "</span></div><div class=\"sec-body\">" + lines + "</div>";
+var ACC_META = {
+  'SUMMARY':                {ico:'&#128221;',ttl:'Summary'},
+  'KEY POINTS':             {ico:'&#128273;',ttl:'Key Points'},
+  'LITERARY DEVICES':       {ico:'&#128218;',ttl:'Literary Devices'},
+  'ERQ':                    {ico:'&#9997;&#65039;',ttl:'ERQs'},
+  'CRQ':                    {ico:'&#128172;',ttl:'CRQs'},
+  'RTC':                    {ico:'&#128270;',ttl:'RTCs'},
+  'EXPLANATION OF VERSES':  {ico:'&#128221;',ttl:'Explanation of Verses'},
+  'MCQS':                   {ico:'&#9989;',ttl:'MCQs'},
+  'Q AND A':                {ico:'&#10067;',ttl:'Q & A'},
+  'FILL IN THE BLANKS':     {ico:'&#9999;&#65039;',ttl:'Fill in the Blanks'},
+  'TIMELINE':               {ico:'&#128197;',ttl:'Timeline'},
+  'CAUSES AND EFFECTS':     {ico:'&#9889;',ttl:'Causes & Effects'},
+  'KEY FIGURES':            {ico:'&#128100;',ttl:'Key Figures'},
+  'KEY FORMULAS':           {ico:'&#128290;',ttl:'Key Formulas'},
+  'STEP BY STEP SOLUTIONS': {ico:'&#128208;',ttl:'Step-by-step Solutions'},
+  'PRACTICE PROBLEMS':      {ico:'&#129518;',ttl:'Practice Problems'},
+  'CASE STUDIES':           {ico:'&#127758;',ttl:'Case Studies'},
+  'MAP WORK':               {ico:'&#128506;',ttl:'Map Work'},
+  'KEY CONCEPTS':           {ico:'&#128161;',ttl:'Key Concepts'},
+  'TRUE OR FALSE':          {ico:'&#128260;',ttl:'True / False'},
+  'KEY TERMS':              {ico:'&#128218;',ttl:'Key Terms'},
+  'NUMERICAL PROBLEMS':     {ico:'&#128290;',ttl:'Numerical Problems'},
+  'BOOK QUESTIONS':         {ico:'&#128214;',ttl:'Book Questions'}
+};
+function renderSections(sections){
+  // Legacy format support (old history sessions)
+  if(sections && sections.summary !== undefined && !sections['SUMMARY']){
+    var leg = {};
+    if(sections.keypoints) leg['KEY POINTS'] = sections.keypoints;
+    if(sections.summary)   leg['SUMMARY']     = sections.summary;
+    if(sections.qanda)     leg['Q AND A']     = sections.qanda;
+    if(sections.fillblanks)leg['FILL IN THE BLANKS'] = sections.fillblanks;
+    if(sections.additional)leg['ADDITIONAL NOTES']   = sections.additional;
+    if(sections.bookqs && !/^none found/i.test(sections.bookqs)) leg['BOOK QUESTIONS'] = sections.bookqs;
+    sections = leg;
   }
-  html += sec("&#128273;","Key Points", p.keypoints);
-  html += sec("&#128221;","Summary Notes", p.summary);
-  html += sec("&#10067;","Exam Q&A", p.qanda);
-  html += sec("&#9999;&#65039;","Fill in the Blanks", p.fillblanks);
-  html += sec("&#128218;","Additional Notes", p.additional);
-  var bq = clean(p.bookqs);
-  if(bq && !/^none found/i.test(bq)) html += sec("&#128214;","Book Questions", p.bookqs);
+  var html = '';
+  Object.keys(sections).forEach(function(key){
+    var content = clean(sections[key]);
+    if(!content || /^none found/i.test(content)) return;
+    var meta = ACC_META[key] || {ico:'&#128196;', ttl:key.charAt(0)+key.slice(1).toLowerCase()};
+    var isOpen = (key === 'SUMMARY');
+    var lines = content.split('\n').map(function(line){
+      line = line.trim(); if(!line) return '';
+      var d = esc(line)
+        .replace(/\[HARD\]/gi,'<span class="diff-h">HARD</span>')
+        .replace(/\[MEDIUM\]/gi,'<span class="diff-m">MED</span>')
+        .replace(/\[EASY\]/gi,'<span class="diff-e">EASY</span>');
+      if(/^(Q[0-9]+:|BQ[0-9]+:)/i.test(line)) return '<span class="q">'+d+'</span>';
+      if(/^(A[0-9]+:|BA[0-9]+:)/i.test(line)) return '<span class="a">'+d+'</span>';
+      return d;
+    }).join('\n');
+    html += '<div class="acc-item">'+
+      '<div class="acc-head'+(isOpen?' open':'')+'" onclick="toggleAcc(this)">'+
+        '<div class="acc-head-left"><span class="acc-ico">'+meta.ico+'</span><span class="acc-ttl">'+meta.ttl+'</span></div>'+
+        '<svg class="acc-chevron" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="rgba(255,255,255,0.7)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>'+
+      '</div>'+
+      '<div class="acc-body'+(isOpen?' open':'')+'">'+lines+'</div>'+
+    '</div>';
+  });
   return html;
 }
 
 function doCopy(btn){
   if(!allResultData.length) return;
-  var d = allResultData[0];
-  var parts = ["KEY POINTS\n\n"+d.keypoints,"SUMMARY NOTES\n\n"+d.summary,"EXAM Q&A\n\n"+d.qanda,"FILL IN THE BLANKS\n\n"+d.fillblanks,"ADDITIONAL NOTES\n\n"+d.additional];
-  if(d.bookqs && !/^none found/i.test(d.bookqs)) parts.push("BOOK QUESTIONS\n\n"+d.bookqs);
-  var txt = parts.filter(function(s){ return s.length > 20; }).join("\n\n" + "=".repeat(40) + "\n\n");
+  var sections = allResultData[0];
+  var parts = Object.keys(sections).map(function(k){ return k+"\n\n"+(sections[k]||""); });
+  var txt = parts.filter(function(s){ return s.length > 20; }).join("\n\n"+"=".repeat(40)+"\n\n");
   navigator.clipboard.writeText(txt).then(function(){
     btn.textContent = "Copied!";
     setTimeout(function(){ btn.textContent = "Copy All"; }, 2000);
@@ -1042,20 +1128,24 @@ function buildPDF(data, sName, sId, grade, subject, chapter, dateStr){
       else{ writeLine(d,10,"normal",INK,0); }
     });
   }
-  section("KEY POINTS", data.keypoints);
-  section("SUMMARY NOTES", data.summary);
-  section("EXAM Q & A", data.qanda);
-  section("FILL IN THE BLANKS", data.fillblanks);
-  section("ADDITIONAL NOTES", data.additional);
-  var bq = strip(data.bookqs||"");
-  if(bq && !/^none found/i.test(bq)) section("BOOK QUESTIONS", data.bookqs);
+  var sects = data.sections || (function(){
+    var leg = {};
+    if(data.keypoints) leg['KEY POINTS'] = data.keypoints;
+    if(data.summary)   leg['SUMMARY']    = data.summary;
+    if(data.qanda)     leg['Q AND A']    = data.qanda;
+    if(data.fillblanks)leg['FILL IN THE BLANKS'] = data.fillblanks;
+    if(data.additional)leg['ADDITIONAL NOTES']   = data.additional;
+    if(data.bookqs && !/^none found/i.test(data.bookqs)) leg['BOOK QUESTIONS'] = data.bookqs;
+    return leg;
+  })();
+  Object.keys(sects).forEach(function(k){ section(k, sects[k]); });
   var total = pdf.getNumberOfPages();
   for(var p=1;p<=total;p++){ pdf.setPage(p); drawPage(p,total); }
   pdf.save("LearningDEN_" + sId + "_" + Date.now() + ".pdf");
 }
 
 async function saveSession(parsed, imageCount, chapter){
-  var sd = { createdAt:new Date().toISOString(), grade:selGrade, sub:selSub, subject:selSubject, chapter:chapter||"", imageCount:imageCount, keypoints:parsed.keypoints, summary:parsed.summary, qanda:parsed.qanda, fillblanks:parsed.fillblanks, additional:parsed.additional, bookqs:parsed.bookqs };
+  var sd = { createdAt:new Date().toISOString(), grade:selGrade, sub:selSub, subject:selSubject, chapter:chapter||"", imageCount:imageCount, sections:parsed };
   if(fbReady && db){
     try{
       await db.collection("students").doc(studentId).collection("sessions").add(sd);
