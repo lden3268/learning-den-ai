@@ -769,147 +769,186 @@ function downloadHistoryPdf(idx){
 function generatePDF(resultsData, studentId, grade, dateStr, subject, studentName, chapter){
   const {jsPDF} = window.jspdf;
   const pdf = new jsPDF({orientation:'portrait', unit:'mm', format:'a4'});
-  const M=16, W=178, PW=210, PH=297;
-  const HEADER_H = 28;
-  const CONTENT_START = HEADER_H + 8;
-  const FOOTER_Y = 284;
+  const PW=210, PH=297, M=14, W=182;
 
-  // Colors
-  const BG  = [202, 235, 252]; // sky blue
-  const NV  = [30,  58,  95];  // navy
-  const GD  = [201, 148, 58];  // gold
-  const WH  = [255, 255, 255];
-  const TX  = [20,  40,  70];
-  const MB  = [65,  120, 175]; // medium blue for section bars
-  const BLK = [15,  15,  15];  // near black for title
+  // ── PALETTE ─────────────────────────────────────────
+  const SKY  = [202, 235, 252];   // sky blue header bg
+  const GOLD = [191, 138, 48];    // gold accent
+  const NAVY = [25,  50,  90];    // navy for section bars
+  const INK  = [22,  22,  22];    // near black — all body text
+  const WH   = [255, 255, 255];
+  const LGRAY= [245, 247, 250];   // light gray page bg
+  const MGRAY= [180, 195, 210];   // muted info text
 
-  function strip(t){ return (t||'').replace(/\*\*\*/g,'').replace(/\*\*/g,'').replace(/\*/g,'').replace(/^---+$/gm,'').replace(/---REVISION CHECKLIST---/gi,'').trim(); }
+  const HEADER_H  = 22;
+  const GOLD_LINE = 2;
+  const BODY_TOP  = HEADER_H + GOLD_LINE + 6;
+  const FOOTER_Y  = 282;
+
+  function strip(t){
+    return (t||'')
+      .replace(/\*\*\*/g,'').replace(/\*\*/g,'').replace(/\*/g,'')
+      .replace(/^---+\s*$/gm,'').trim();
+  }
 
   let gradeLabel = '';
   if(grade==='olevel'||grade==='O Level') gradeLabel='O Level';
-  else if(grade==='grade1-8'||grade==='Grade grade1-8'||grade==='1-8') gradeLabel='Grade 1-8';
+  else if(grade==='grade1-8'||grade==='1-8'||grade==='Grade grade1-8') gradeLabel='Grade 1-8';
   else gradeLabel = isNaN(parseInt(grade)) ? grade : 'Grade '+grade;
 
-  const nameDisplay = (studentName && studentName !== studentId && studentName.trim()!=='') ? studentName+' ('+studentId+')' : studentId;
+  const nameDisplay = (studentName && studentName!==studentId && studentName.trim())
+    ? studentName : studentId;
 
+  // ── HEADER ───────────────────────────────────────────
   function drawHeader(){
-    // Entire header is sky blue — no dark strip at top
-    pdf.setFillColor(...BG);
+    // Sky blue band
+    pdf.setFillColor(...SKY);
     pdf.rect(0, 0, PW, HEADER_H, 'F');
-    // Gold bottom border line only
-    pdf.setFillColor(...GD);
-    pdf.rect(0, HEADER_H, PW, 1.5, 'F');
-    // White content area
-    pdf.setFillColor(...WH);
-    pdf.rect(0, HEADER_H+1.5, PW, PH-(HEADER_H+1.5), 'F');
+    // Gold bottom strip
+    pdf.setFillColor(...GOLD);
+    pdf.rect(0, HEADER_H, PW, GOLD_LINE, 'F');
+    // Light gray body
+    pdf.setFillColor(...LGRAY);
+    pdf.rect(0, HEADER_H+GOLD_LINE, PW, PH-(HEADER_H+GOLD_LINE), 'F');
 
-    // Title — black, centered, compact
-    pdf.setFontSize(14);
+    // LEFT: "Learning DEN AI" — large, bold, black
+    pdf.setFontSize(15);
     pdf.setFont('helvetica','bold');
-    pdf.setTextColor(...BLK);
-    pdf.text('Learning DEN AI', PW/2, 10, {align:'center'});
+    pdf.setTextColor(...INK);
+    pdf.text('Learning DEN AI', M, 14);
 
-    // One info line — all on one row
-    pdf.setFontSize(7.5);
-    pdf.setFont('helvetica','normal');
-    pdf.setTextColor(70, 100, 140);
-    const info = nameDisplay + '   |   ' + gradeLabel + '   |   ' + (subject||'') + (chapter ? '   |   '+chapter : '') + '   |   ' + dateStr;
-    pdf.text(info, PW/2, 19, {align:'center'});
-  }
-
-  function drawFooter(pageNum, total){
-    pdf.setFillColor(...BG);
-    pdf.rect(0, FOOTER_Y, PW, PH-FOOTER_Y, 'F');
-    pdf.setFillColor(...NV);
-    pdf.rect(0, FOOTER_Y, PW, 0.8, 'F');
+    // RIGHT: student info stacked — small, muted
     pdf.setFontSize(7);
     pdf.setFont('helvetica','normal');
-    pdf.setTextColor(80,110,150);
-    pdf.text('Learning DEN AI  ·  Confidential Student Material', M, FOOTER_Y+6);
+    pdf.setTextColor(...MGRAY);
+    const rightX = PW - M;
+    const infoLines = [
+      nameDisplay + '  |  ' + gradeLabel,
+      (subject||'General') + (chapter ? '  ·  '+chapter : ''),
+      dateStr
+    ];
+    infoLines.forEach((line, i) => {
+      pdf.text(line, rightX, 7 + (i * 5.5), {align:'right'});
+    });
+  }
+
+  // ── FOOTER ───────────────────────────────────────────
+  function drawFooter(pageNum, total){
+    pdf.setFillColor(...SKY);
+    pdf.rect(0, FOOTER_Y, PW, PH-FOOTER_Y, 'F');
+    pdf.setFillColor(...NAVY);
+    pdf.rect(0, FOOTER_Y, PW, 0.6, 'F');
+    pdf.setFontSize(7);
+    pdf.setFont('helvetica','normal');
+    pdf.setTextColor(...MGRAY);
+    pdf.text('Learning DEN AI  ·  Confidential', M, FOOTER_Y+6);
     pdf.text('Page '+pageNum+' / '+total, PW-M, FOOTER_Y+6, {align:'right'});
   }
 
-  let y = CONTENT_START;
+  // ── CONTENT STATE ────────────────────────────────────
+  let y = BODY_TOP;
 
-  function checkPage(need){
-    if(y + need > FOOTER_Y - 6){
-      pdf.addPage();
-      drawHeader();
-      y = CONTENT_START;
-    }
+  function newPage(){
+    pdf.addPage();
+    drawHeader();
+    y = BODY_TOP;
   }
 
-  function writeLine(text, fs, style, r, g, b, indent){
-    indent = indent||0;
+  function needSpace(h){
+    if(y + h > FOOTER_Y - 4) newPage();
+  }
+
+  // Write a single text line (auto-wraps, auto-pages)
+  function writeLine(text, fs, fontStyle, color, leftPad){
+    leftPad = leftPad||0;
     pdf.setFontSize(fs);
-    pdf.setFont('helvetica', style);
-    pdf.setTextColor(r,g,b);
-    const wrapped = pdf.splitTextToSize(text, W-6-indent);
+    pdf.setFont('helvetica', fontStyle);
+    pdf.setTextColor(...color);
+    const maxW = W - leftPad - 4;
+    const wrapped = pdf.splitTextToSize(text, maxW);
     wrapped.forEach(wl => {
-      checkPage(fs*0.45);
-      pdf.text(wl, M+4+indent, y);
-      y += fs*0.42;
+      needSpace(fs * 0.44);
+      pdf.text(wl, M + 4 + leftPad, y);
+      y += fs * 0.44;
     });
-    y += 1.2;
+    y += 1;
   }
 
-  function writeSection(title, num, rawContent){
+  // ── SECTION RENDERER ─────────────────────────────────
+  // Each section: starts fresh page, section bar, then content flows
+  function renderSection(title, num, rawContent){
     const cleaned = strip(rawContent||'');
     if(!cleaned) return;
 
-    checkPage(16);
-    // Section bar
-    pdf.setFillColor(...MB);
-    pdf.roundedRect(M, y, W, 10, 1.5, 1.5, 'F');
-    pdf.setFontSize(9.5);
+    // Every section starts on a NEW PAGE
+    newPage();
+
+    // Section title bar — full width, navy
+    pdf.setFillColor(...NAVY);
+    pdf.rect(M, y, W, 11, 'F');
+    pdf.setFontSize(10);
     pdf.setFont('helvetica','bold');
     pdf.setTextColor(...WH);
-    pdf.text('( '+num+' )   '+title, M+5, y+7);
-    y += 14;
+    pdf.text('( '+num+' )   '+title, M+5, y+7.8);
+    y += 16;
 
+    // Content — all same font (helvetica normal INK), Q lines bold black
     cleaned.split('\n').forEach(line => {
       line = line.trim();
-      if(!line){ y+=1.5; return; }
-      const display = line.replace(/\[EASY\]/g,'[Easy]').replace(/\[MEDIUM\]/g,'[Med]').replace(/\[HARD\]/g,'[Hard]');
-      if(/^Q\d+:/i.test(line))       writeLine(display, 10, 'bold',   ...NV, 0);
-      else if(/^A\d+:/i.test(line))  writeLine(display, 10, 'normal', 30,100,50, 3);
-      else if(/^I can/i.test(line))  writeLine('✓  '+display, 9.5, 'normal', 30,110,60, 0);
-      else                           writeLine(display, 10, 'normal', ...TX, 0);
+      if(!line){ y += 2; return; }
+
+      // Clean up difficulty tags
+      const display = line
+        .replace(/\[EASY\]/gi,  ' [Easy]')
+        .replace(/\[MEDIUM\]/gi,' [Med]')
+        .replace(/\[HARD\]/gi,  ' [Hard]');
+
+      if(/^Q\d+:/i.test(line)){
+        // Question: bold, black, small top gap
+        y += 2;
+        writeLine(display, 10, 'bold', INK, 0);
+      } else if(/^A\d+:/i.test(line)){
+        // Answer: same font, same color, slight indent
+        writeLine(display, 10, 'normal', INK, 4);
+        y += 1;
+      } else {
+        writeLine(display, 10, 'normal', INK, 0);
+      }
     });
-    y += 4;
   }
 
-  // Build PDF
-  drawHeader();
+  // ── BUILD ────────────────────────────────────────────
+  drawHeader(); // page 1
 
   resultsData.forEach((item, i) => {
     if(!item) return;
 
-    checkPage(14);
-    pdf.setFillColor(...NV);
-    pdf.roundedRect(M, y, W, 9, 1.5, 1.5, 'F');
-    pdf.setFontSize(9.5);
+    // Image title — on its own line, after a small gap
+    needSpace(14);
+    pdf.setFillColor(...GOLD);
+    pdf.rect(M, y, W, 10, 'F');
+    pdf.setFontSize(10);
     pdf.setFont('helvetica','bold');
     pdf.setTextColor(...WH);
-    pdf.text('Image '+(i+1)+':  '+(item.name||''), M+4, y+6.5);
-    y += 13;
+    pdf.text('Image '+(i+1)+'  ·  '+(item.name||''), M+4, y+7);
+    y += 15;
 
     [
-      {title:'KEY POINTS',         num:'1', content:item.keypoints},
-      {title:'SUMMARY NOTES',      num:'2', content:item.summary},
-      {title:'EXAM Q & A',         num:'3', content:item.qanda},
-      {title:'FILL IN THE BLANKS', num:'4', content:item.fillblanks},
-      {title:'ADDITIONAL NOTES',   num:'5', content:item.additional},
-    ].forEach(s => writeSection(s.title, s.num, s.content||''));
-
-    y += 6;
+      {title:'KEY POINTS',         num:'1', c:item.keypoints},
+      {title:'SUMMARY NOTES',      num:'2', c:item.summary},
+      {title:'EXAM Q & A',         num:'3', c:item.qanda},
+      {title:'FILL IN THE BLANKS', num:'4', c:item.fillblanks},
+      {title:'ADDITIONAL NOTES',   num:'5', c:item.additional},
+    ].forEach(s => renderSection(s.title, s.num, s.c||''));
   });
 
+  // Page numbers
   const total = pdf.getNumberOfPages();
   for(let p=1; p<=total; p++){
     pdf.setPage(p);
     drawFooter(p, total);
   }
+
   pdf.save('LearningDEN_'+studentId+'_'+Date.now()+'.pdf');
 }
 
