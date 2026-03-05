@@ -516,7 +516,7 @@ async function doLogin(){
         errEl.style.display = "block";
         btn.textContent = "Enter Learning DEN"; btn.disabled = false; return;
       }
-      studentId = val; studentName = data.name || val;
+      studentId = val; var rawName = data.name || val; studentName = rawName.replace(/\b\w/g, function(c){ return c.toUpperCase(); });
     } else {
       errEl.textContent = "Cannot connect to server. Check your internet.";
       errEl.style.display = "block";
@@ -721,7 +721,7 @@ async function generateFromImages(images, chapter){
       "---KEY POINTS---\n" +
       "List the most important points about this text, poem, or chapter. Include themes, characters, key events, and literary significance.\n\n" +
       "---SUMMARY NOTES---\n" +
-      "Write a thorough summary of the passage or poem. Then list all Literary Devices used with the exact line or quote as evidence and explanation of its effect.\n\n" +
+      "Brief summary of the passage or poem. List key literary devices with a short quote and effect.\n\n" +
       "---EXAM Q&A---\n" +
       "Generate a mix of question types that appear in exams for this subject:\n" +
       "- Extended Response Questions (ERQ): require a full essay-style answer with evidence\n" +
@@ -740,7 +740,7 @@ async function generateFromImages(images, chapter){
       "---KEY POINTS---\n" +
       "List all formulas, rules, and concepts shown in the images numbered clearly.\n\n" +
       "---SUMMARY NOTES---\n" +
-      "Explain each concept clearly with a worked example. Show step by step working.\n\n" +
+      "Brief explanation of each concept with one worked example.\n\n" +
       "---EXAM Q&A---\n" +
       "Write 10 practice questions that cover all concepts shown. Include easy, medium and hard difficulty. Show full step by step solutions.\n" +
       "Q1: [question] [EASY/MEDIUM/HARD]\n" +
@@ -755,7 +755,7 @@ async function generateFromImages(images, chapter){
       "---KEY POINTS---\n" +
       "List all key facts, events, dates, people, places, and causes/effects numbered clearly.\n\n" +
       "---SUMMARY NOTES---\n" +
-      "Write a detailed organised summary covering all topics. Use clear headings for different sections of the content. Include dates, names, and significance of events.\n\n" +
+      "Short organised summary with key dates, names, and significance. Use clear headings.\n\n" +
       "---EXAM Q&A---\n" +
       "Write 10 to 12 exam questions that an educator would set for this topic. Include:\n" +
       "- Knowledge questions: Who, What, When, Where\n" +
@@ -775,7 +775,7 @@ async function generateFromImages(images, chapter){
       "---KEY POINTS---\n" +
       "List all scientific facts, definitions, processes, and concepts numbered clearly.\n\n" +
       "---SUMMARY NOTES---\n" +
-      "Explain all concepts clearly. Include processes, diagrams described in words, cause and effect relationships, and scientific reasoning.\n\n" +
+      "Brief explanation of each concept. Include key processes and cause-effect links.\n\n" +
       "---EXAM Q&A---\n" +
       "Write 10 to 12 science exam questions. Include definition questions, explain how/why questions, application questions, and diagram/label questions if relevant.\n" +
       "Q1: [question] [EASY/MEDIUM/HARD]\n" +
@@ -790,7 +790,7 @@ async function generateFromImages(images, chapter){
       "---KEY POINTS---\n" +
       "List all important facts and concepts numbered clearly.\n\n" +
       "---SUMMARY NOTES---\n" +
-      "Write a thorough well organised summary of all content covering every topic in the images.\n\n" +
+      "Short, well-organised summary covering the main topics in the images.\n\n" +
       "---EXAM Q&A---\n" +
       "Write 10 to 12 exam questions with complete model answers. Tag each EASY MEDIUM or HARD.\n" +
       "Q1: [question] [EASY/MEDIUM/HARD]\n" +
