@@ -834,7 +834,7 @@ async function generateFromImages(images, chapter){
 
   var res = await fetch("/api/generate",{
     method:"POST",
-    headers:{"Content-Type":"application/json"},
+    headers:{"Content-Type":"application/json","x-internal-token":"ldai-9k2x7mQ3vR"},
     body:JSON.stringify({model:"claude-opus-4-6", max_tokens:6000, messages:[{role:"user", content:content}]})
   });
   var data = await res.json();
@@ -917,10 +917,12 @@ function buildPDF(data, sName, sId, grade, subject, chapter, dateStr){
   var HEADER_H=24,FOOTER_Y=283;
   function setC(a){ pdf.setTextColor(a[0],a[1],a[2]); }
   function strip(t){ return (t||"").replace(/\*\*\*/g,"").replace(/\*\*/g,"").replace(/\*/g,"").trim(); }
+  function initPage(){
+    pdf.setFillColor(LGRAY[0],LGRAY[1],LGRAY[2]); pdf.rect(0,0,PW,PH,"F");
+  }
   function drawPage(pageNum,total){
     pdf.setFillColor(SKY[0],SKY[1],SKY[2]); pdf.rect(0,0,PW,HEADER_H,"F");
     pdf.setFillColor(GOLD[0],GOLD[1],GOLD[2]); pdf.rect(0,HEADER_H,PW,2,"F");
-    pdf.setFillColor(LGRAY[0],LGRAY[1],LGRAY[2]); pdf.rect(0,HEADER_H+2,PW,PH-(HEADER_H+2),"F");
     pdf.setFont("helvetica","bold"); pdf.setFontSize(14); setC(NAVY);
     pdf.text("Learning DEN AI", M, 16);
     pdf.setFont("helvetica","normal"); pdf.setFontSize(7); setC(DTEXT);
@@ -935,7 +937,8 @@ function buildPDF(data, sName, sId, grade, subject, chapter, dateStr){
     pdf.text("Page " + pageNum + " / " + total, PW-M, FOOTER_Y+6, {align:"right"});
   }
   var y = HEADER_H + 9;
-  function newPage(){ pdf.addPage(); y = HEADER_H + 9; }
+  initPage();
+  function newPage(){ pdf.addPage(); initPage(); y = HEADER_H + 9; }
   function need(h){ if(y+h > FOOTER_Y-4) newPage(); }
   function writeLine(text, fs, style, color, indent){
     indent = indent||0;
