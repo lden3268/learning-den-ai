@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Learning Den AI</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+  :root{--green:#1a6b3c;--green-light:#2a8f52;--green-pale:#e8f5ee;--gold:#c9a84c;--dark:#0f1f17;--text:#1c2b22;--muted:#5a7a65;--white:#f9fdf9;--card:#ffffff;--border:#d0e8d8;}
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:'DM Sans',sans-serif;background:var(--white);color:var(--text);min-height:100vh;}
+  header{background:var(--dark);padding:18px 40px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;border-bottom:2px solid var(--gold);}
+  .logo{display:flex;align-items:center;gap:12px;}
+  .logo-icon{width:40px;height:40px;background:var(--gold);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;}
+  .logo-text{font-family:'Playfair Display',serif;font-size:22px;color:var(--white);letter-spacing:0.5px;}
+  .logo-text span{color:var(--gold);}
+  .tagline{font-size:12px;color:#8aab95;letter-spacing:2px;text-transform:uppercase;}
+  .user-badge{background:var(--green);color:white;padding:6px 14px;border-radius:20px;font-size:13px;display:none;}
+  .hero{background:linear-gradient(135deg,var(--dark) 0%,#1a3d28 60%,var(--green) 100%);padding:60px 40px 70px;text-align:center;position:relative;overflow:hidden;}
+  .hero::before{content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;background:radial-gradient(ellipse at center,rgba(201,168,76,0.08) 0%,transparent 60%);pointer-events:none;}
+  .hero h1{font-family:'Playfair Display',serif;font-size:clamp(32px,5vw,56px);color:var(--white);line-height:1.1;margin-bottom:14px;}
+  .hero h1 em{color:var(--gold);font-style:italic;}
+  .hero p{font-size:16px;color:#9abfa8;max-width:560px;margin:0 auto 10px;line-height:1.7;}
+  .slogan{font-size:12px;color:var(--gold);letter-spacing:3px;text-transform:uppercase;margin-top:8px;}
+  .container{max-width:900px;margin:0 auto;padding:44px 24px 80px;}
+  .login-screen{background:white;border:1.5px solid var(--border);border-radius:20px;padding:40px;text-align:center;margin-bottom:30px;}
+  .login-screen h2{font-family:'Playfair Display',serif;font-size:26px;color:var(--text);margin-bottom:10px;}
+  .login-screen p{font-size:14px;color:var(--muted);margin-bottom:24px;line-height:1.6;}
+  .login-input-row{display:flex;gap:10px;max-width:440px;margin:0 auto;}
+  .login-input-row input{flex:1;padding:14px 18px;border:1.5px solid var(--border);border-radius:12px;font-family:'DM Sans',sans-serif;font-size:15px;outline:none;transition:border-color 0.2s;text-transform:uppercase;letter-spacing:2px;}
+  .login-input-row input:focus{border-color:var(--green);}
+  .btn-login{padding:14px 24px;background:var(--green);color:white;border:none;border-radius:12px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:500;cursor:pointer;transition:background 0.2s;white-space:nowrap;}
+  .btn-login:hover{background:var(--green-light);}
+  .login-error{color:#c0392b;font-size:13px;margin-top:10px;display:none;}
+  .main-app{display:none;}
+  .student-bar{background:var(--green-pale);border:1px solid var(--border);border-radius:14px;padding:14px 20px;margin-bottom:24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;}
+  .student-bar .info{font-size:14px;color:var(--green);}
+  .student-bar .info strong{font-weight:600;}
+  .student-bar .stats{font-size:13px;color:var(--muted);}
+  .btn-logout{background:none;border:1px solid var(--border);border-radius:8px;padding:6px 14px;font-size:12px;color:var(--muted);cursor:pointer;font-family:'DM Sans',sans-serif;}
+  .btn-logout:hover{color:#c0392b;border-color:#c0392b;}
+  .api-section{background:var(--green-pale);border:1px solid var(--border);border-radius:16px;padding:22px 26px;margin-bottom:28px;}
+  .api-section label{display:block;font-size:12px;font-weight:500;color:var(--green);letter-spacing:1px;text-transform:uppercase;margin-bottom:10px;}
+  .api-row{display:flex;gap:10px;}
+  .api-row input{flex:1;padding:11px 15px;border:1.5px solid var(--border);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:14px;background:white;color:var(--text);outline:none;transition:border-color 0.2s;}
+  .api-row input:focus{border-color:var(--green);}
+  .btn-save{padding:11px 20px;background:var(--green);color:white;border:none;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;cursor:pointer;transition:background 0.2s;white-space:nowrap;}
+  .btn-save:hover{background:var(--green-light);}
+  .api-status{font-size:12px;margin-top:8px;color:var(--muted);}
+  .api-status.ok{color:#1a6b3c;font-weight:500;}
+  .api-status.err{color:#c0392b;font-weight:500;}
+  .options-row{display:flex;gap:12px;margin-bottom:24px;flex-wrap:wrap;}
+  .grade-btn{flex:1;min-width:120px;padding:13px 20px;border:1.5px solid var(--border);border-radius:12px;background:white;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;color:var(--muted);cursor:pointer;transition:all 0.2s;text-align:center;}
+  .grade-btn:hover{border-color:var(--green);color:var(--green);}
+  .grade-btn.active{background:var(--green);border-color:var(--green);color:white;}
+  .upload-card{background:var(--card);border:2px dashed var(--border);border-radius:20px;padding:44px 30px;text-align:center;cursor:pointer;transition:all 0.25s;position:relative;margin-bottom:20px;}
+  .upload-card:hover,.upload-card.dragover{border-color:var(--green);background:var(--green-pale);transform:translateY(-2px);box-shadow:0 8px 30px rgba(26,107,60,0.1);}
+  .upload-card input[type="file"]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
+  .upload-icon{font-size:44px;margin-bottom:14px;display:block;}
+  .upload-card h3{font-family:'Playfair Display',serif;font-size:20px;color:var(--text);margin-bottom:8px;}
+  .upload-card p{font-size:14px;color:var(--muted);line-height:1.6;}
+  .upload-limit{display:inline-block;margin-top:10px;background:var(--gold);color:var(--dark);font-size:12px;font-weight:600;padding:4px 14px;border-radius:20px;}
+  .formats{margin-top:12px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap;}
+  .format-tag{background:var(--green-pale);color:var(--green);border:1px solid var(--border);padding:4px 12px;border-radius:20px;font-size:12px;font-weight:500;}
+  .image-counter{display:none;align-items:center;justify-content:space-between;margin-bottom:12px;padding:10px 16px;background:var(--green-pale);border:1px solid var(--border);border-radius:12px;}
+  .image-counter span{font-size:14px;color:var(--green);font-weight:500;}
+  .btn-clear-all{background:none;border:1px solid var(--border);border-radius:8px;padding:5px 14px;font-size:12px;color:var(--muted);cursor:pointer;font-family:'DM Sans',sans-serif;}
+  .btn-clear-all:hover{color:#c0392b;border-color:#c0392b;}
+  .image-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:10px;margin-bottom:24px;}
+  .img-thumb{position:relative;border-radius:10px;overflow:hidden;border:1.5px solid var(--border);background:#f0f4f1;aspect-ratio:1;}
+  .img-thumb img{width:100%;height:100%;object-fit:cover;display:block;}
+  .img-thumb .remove-btn{position:absolute;top:4px;right:4px;width:22px;height:22px;background:rgba(192,57,43,0.85);color:white;border:none;border-radius:50%;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+  .img-thumb .img-num{position:absolute;bottom:4px;left:6px;background:rgba(15,31,23,0.75);color:white;font-size:11px;padding:2px 6px;border-radius:6px;}
+  .error-box{background:#fff5f5;border:1.5px solid #f5c6c6;border-radius:12px;padding:16px 20px;color:#c0392b;font-size:14px;display:none;margin-bottom:20px;}
+  .btn-generate{width:100%;padding:18px;background:linear-gradient(135deg,var(--green) 0%,var(--green-light) 100%);color:white;border:none;border-radius:14px;font-family:'Playfair Display',serif;font-size:20px;cursor:pointer;transition:all 0.25s;margin-bottom:36px;letter-spacing:0.5px;}
+  .btn-generate:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 10px 30px rgba(26,107,60,0.3);}
+  .btn-generate:disabled{opacity:0.55;cursor:not-allowed;}
+  .btn-inner{display:flex;align-items:center;justify-content:center;gap:10px;}
+  .loader{display:none;text-align:center;padding:40px 20px;}
+  .loader.active{display:block;}
+  .dots{display:flex;justify-content:center;gap:8px;margin-bottom:16px;}
+  .dot{width:12px;height:12px;background:var(--green);border-radius:50%;animation:bounce 1.2s infinite;}
+  .dot:nth-child(2){animation-delay:0.2s;}
+  .dot:nth-child(3){animation-delay:0.4s;}
+  @keyframes bounce{0%,80%,100%{transform:scale(0.6);opacity:0.4;}40%{transform:scale(1);opacity:1;}}
+  .loader p{color:var(--muted);font-size:15px;}
+  .loader .sub{font-size:13px;color:#8aab95;margin-top:6px;}
+  #results{display:none;animation:fadeUp 0.5s ease;}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
+  .overall-summary{background:linear-gradient(135deg,var(--dark) 0%,#1a3d28 100%);border-radius:20px;padding:28px 30px;margin-bottom:28px;color:white;}
+  .overall-summary h2{font-family:'Playfair Display',serif;font-size:22px;color:var(--gold);margin-bottom:6px;}
+  .overall-summary p{font-size:14px;color:#9abfa8;margin-bottom:16px;}
+  .overall-actions{display:flex;gap:10px;flex-wrap:wrap;}
+  .btn-gold{padding:11px 22px;background:var(--gold);color:var(--dark);border:none;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;transition:background 0.2s;}
+  .btn-gold:hover{background:#b8973e;}
+  .btn-outline-white{padding:11px 22px;background:transparent;color:white;border:1.5px solid rgba(255,255,255,0.3);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;cursor:pointer;transition:all 0.2s;}
+  .btn-outline-white:hover{background:rgba(255,255,255,0.1);}
+  .image-result-block{margin-bottom:36px;border:1.5px solid var(--border);border-radius:20px;overflow:hidden;}
+  .image-result-header{background:var(--dark);padding:14px 20px;display:flex;align-items:center;gap:14px;}
+  .image-result-header img{width:48px;height:48px;object-fit:cover;border-radius:8px;border:2px solid var(--gold);flex-shrink:0;}
+  .img-title{font-family:'Playfair Display',serif;font-size:16px;color:white;}
+  .img-sub{font-size:12px;color:#8aab95;}
+  .btn-copy-single{margin-left:auto;padding:7px 16px;background:var(--gold);color:var(--dark);border:none;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;}
+  .btn-copy-single:hover{background:#b8973e;}
+  .result-section{background:white;border-top:1px solid var(--border);}
+  .section-header{padding:12px 20px;background:var(--green-pale);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;}
+  .section-icon{font-size:18px;}
+  .section-title{font-family:'Playfair Display',serif;font-size:15px;color:var(--green);font-weight:700;}
+  .section-body{padding:18px 22px;font-size:14px;line-height:1.8;color:var(--text);white-space:pre-wrap;}
+  .history-section{margin-top:50px;}
+  .history-section h2{font-family:'Playfair Display',serif;font-size:22px;color:var(--text);margin-bottom:20px;}
+  .history-item{background:white;border:1.5px solid var(--border);border-radius:14px;padding:16px 20px;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;}
+  .h-date{font-size:12px;color:var(--muted);margin-bottom:4px;}
+  .h-title{font-size:14px;font-weight:500;color:var(--text);}
+  .h-count{font-size:12px;color:var(--green);}
+  .btn-history-pdf{padding:7px 16px;background:var(--green-pale);color:var(--green);border:1px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;cursor:pointer;}
+  .btn-history-pdf:hover{background:var(--green);color:white;}
+  .save-status{font-size:13px;color:var(--green);text-align:center;padding:10px;display:none;font-weight:500;}
+  .firebase-note{background:#fff8e1;border:1px solid #ffe082;border-radius:10px;padding:10px 16px;font-size:12px;color:#8a6d00;margin-bottom:16px;display:none;}
+  footer{background:var(--dark);text-align:center;padding:22px;color:#5a7a65;font-size:13px;border-top:1px solid #1e3528;}
+  footer strong{color:var(--gold);}
+  @media(max-width:600px){header{padding:14px 18px;}.hero{padding:44px 18px 54px;}.container{padding:28px 14px 60px;}.options-row{flex-direction:column;}.image-grid{grid-template-columns:repeat(auto-fill,minmax(85px,1fr));}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-icon">📚</div>
+    <div>
+      <div class="logo-text">Learning Den <span>AI</span></div>
+      <div class="tagline">Learn · Evolve · Win</div>
+    </div>
+  </div>
+  <div class="user-badge" id="headerBadge"></div>
+</header>
+
+<div class="hero">
+  <h1>Upload. Learn. <em>Ace Your Exams.</em></h1>
+  <p>Upload up to 20 images of your textbook or notes. AI instantly generates Key Points, Summary Notes and Exam Q&A for every page.</p>
+  <div class="slogan">Powered by Claude AI</div>
+</div>
+
+<div class="container">
+
+  <div class="login-screen" id="loginScreen">
+    <div style="font-size:48px;margin-bottom:16px;">🔐</div>
+    <h2>Enter Your Student ID</h2>
+    <p>Your teacher has given you a unique Student ID. Enter it below to access Learning Den AI. All your work will be saved automatically.</p>
+    <div class="login-input-row">
+      <input type="text" id="studentIdInput" placeholder="e.g. LD-001" maxlength="20" onkeydown="if(event.key==='Enter') loginStudent()" />
+      <button class="btn-login" onclick="loginStudent()">Enter</button>
+    </div>
+    <div class="login-error" id="loginError">Please enter a valid Student ID.</div>
+  </div>
+
+  <div class="main-app" id="mainApp">
+    <div class="firebase-note" id="firebaseNote">
+      Running in local mode — saving to device only.
+    </div>
+
+    <div class="student-bar">
+      <div class="info">Student ID: <strong id="displayStudentId"></strong></div>
+      <div class="stats" id="sessionStats">Sessions: 0 &nbsp;·&nbsp; Images processed: 0</div>
+      <button class="btn-logout" onclick="logout()">Change ID</button>
+    </div>
+
+    <div class="api-section">
+      <label>Claude API Key</label>
+      <div class="api-row">
+        <input type="password" id="apiKeyInput" placeholder="sk-ant-api03-..." />
+        <button class="btn-save" onclick="saveKey()">Save Key</button>
+      </div>
+      <div class="api-status" id="apiStatus">Enter your Anthropic API key to get started.</div>
+    </div>
+
+    <div class="options-row">
+      <button class="grade-btn active" onclick="selectGrade(this,'grade1-8')">Grade 1 - 8</button>
+      <button class="grade-btn" onclick="selectGrade(this,'olevel')">O Level</button>
+    </div>
+
+    <div class="upload-card" id="uploadCard"
+      ondragover="event.preventDefault();this.classList.add('dragover')"
+      ondragleave="this.classList.remove('dragover')"
+      ondrop="handleDrop(event)">
+      <input type="file" id="fileInput" accept="image/*" multiple onchange="handleFiles(this.files)">
+      <span class="upload-icon">🖼️</span>
+      <h3>Drop your images here</h3>
+      <p>Upload photos of textbook pages, notes, or any study material</p>
+      <span class="upload-limit">Up to 20 images at once</span>
+      <div class="formats">
+        <span class="format-tag">JPG</span><span class="format-tag">PNG</span>
+        <span class="format-tag">WEBP</span><span class="format-tag">HEIC</span>
+      </div>
+    </div>
+
+    <div class="image-counter" id="imageCounter">
+      <span id="counterText">0 images selected</span>
+      <button class="btn-clear-all" onclick="clearAll()">Remove All</button>
+    </div>
+    <div class="image-grid" id="imageGrid"></div>
+    <div class="error-box" id="errorBox"></div>
+
+    <button class="btn-generate" id="generateBtn" onclick="generate()" disabled>
+      <div class="btn-inner"><span>✨</span><span id="generateLabel">Generate Study Material</span></div>
+    </button>
+
+    <div class="loader" id="loader">
+      <div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+      <p id="loaderText">Sending images to AI...</p>
+      <p class="sub" id="loaderSub">Please wait — AI reads all images at once (usually 20-40 seconds)</p>
+    </div>
+
+    <div class="save-status" id="saveStatus">✅ Results saved!</div>
+    <div id="results"></div>
+
+    <div class="history-section" id="historySection" style="display:none;">
+      <h2>Your Previous Sessions</h2>
+      <div id="historyList"></div>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <strong>Learning Den AI</strong> &nbsp;|&nbsp; Learn, Evolve, Win &nbsp;|&nbsp; Powered by Claude
+</footer>
+
+<script>
+  let currentStudentId = '';
+  let selectedGrade = 'grade1-8';
+  let uploadedImages = [];
+  let apiKey = '';
+  let allResultTexts = [];
+  let allResultData = [];
+  let sessionHistory = [];
+  let db = null;
+  let firebaseReady = false;
+
+  const FB_CONFIG = {
+    apiKey: "AIzaSyDytjcwUq254YpUgibkECT1K3cYeJ42t2k",
+    authDomain: "learning-den-ai.firebaseapp.com",
+    projectId: "learning-den-ai",
+    storageBucket: "learning-den-ai.firebasestorage.app",
+    messagingSenderId: "1039011922735",
+    appId: "1:1039011922735:web:f7aa615561e8ac8ea497da"
+  };
+
+  function loadScript(src) {
+    return new Promise((res, rej) => { const s = document.createElement('script'); s.src = src; s.onload = res; s.onerror = rej; document.head.appendChild(s); });
+  }
+
+  async function initFirebase() {
+    try {
+      await loadScript('https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js');
+      await loadScript('https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js');
+      firebase.initializeApp(FB_CONFIG);
+      db = firebase.firestore();
+      firebaseReady = true;
+    } catch(e) {
+      firebaseReady = false;
+      document.getElementById('firebaseNote').style.display = 'block';
+    }
+  }
+
+  function lsGet(key) { try { return JSON.parse(localStorage.getItem(key)); } catch(e) { return null; } }
+  function lsSet(key, val) { try { localStorage.setItem(key, JSON.stringify(val)); } catch(e) {} }
+
+  async function loginStudent() {
+    const val = document.getElementById('studentIdInput').value.trim().toUpperCase();
+    if (!val || val.length < 2) { document.getElementById('loginError').style.display = 'block'; return; }
+    document.getElementById('loginError').style.display = 'none';
+    currentStudentId = val;
+    lsSet('ld_student_id', val);
+    await initApp(val);
+  }
+
+  function logout() {
+    currentStudentId = '';
+    lsSet('ld_student_id', null);
+    document.getElementById('loginScreen').style.display = 'block';
+    document.getElementById('mainApp').style.display = 'none';
+    document.getElementById('headerBadge').style.display = 'none';
+    document.getElementById('studentIdInput').value = '';
+    document.getElementById('results').innerHTML = '';
+    document.getElementById('results').style.display = 'none';
+  }
+
+  async function initApp(studentId) {
+    if (firebaseReady && db) {
+      try {
+        const ref = db.collection('students').doc(studentId);
+        const snap = await ref.get();
+        if (!snap.exists) await ref.set({ studentId, createdAt: new Date().toISOString(), totalSessions: 0, totalImages: 0 });
+      } catch(e) {}
+    }
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('mainApp').style.display = 'block';
+    document.getElementById('displayStudentId').textContent = studentId;
+    document.getElementById('headerBadge').textContent = studentId;
+    document.getElementById('headerBadge').style.display = 'block';
+    apiKey = lsGet('ld_api_key') || '';
+    if (apiKey) {
+      document.getElementById('apiKeyInput').value = apiKey;
+      document.getElementById('apiStatus').textContent = 'API key loaded.';
+      document.getElementById('apiStatus').className = 'api-status ok';
+    }
+    await loadStudentStats(studentId);
+    await loadHistory(studentId);
+    checkReady();
+  }
+
+  async function loadStudentStats(studentId) {
+    if (firebaseReady && db) {
+      try {
+        const snap = await db.collection('students').doc(studentId).get();
+        if (snap.exists) {
+          const d = snap.data();
+          document.getElementById('sessionStats').textContent = 'Sessions: '+(d.totalSessions||0)+'   ·   Images processed: '+(d.totalImages||0);
+          return;
+        }
+      } catch(e) {}
+    }
+    const local = lsGet('ld_stats_'+studentId) || {sessions:0,images:0};
+    document.getElementById('sessionStats').textContent = 'Sessions: '+local.sessions+'   ·   Images processed: '+local.images;
+  }
+
+  async function loadHistory(studentId) {
+    sessionHistory = [];
+    if (firebaseReady && db) {
+      try {
+        const snap = await db.collection('students').doc(studentId).collection('sessions').orderBy('createdAt','desc').limit(10).get();
+        if (!snap.empty) snap.forEach(d => sessionHistory.push({id:d.id,...d.data()}));
+      } catch(e) {}
+    }
+    if (!sessionHistory.length) sessionHistory = lsGet('ld_history_'+studentId) || [];
+    if (!sessionHistory.length) return;
+    document.getElementById('historySection').style.display = 'block';
+    const list = document.getElementById('historyList');
+    list.innerHTML = '';
+    sessionHistory.forEach((d, idx) => {
+      const date = new Date(d.createdAt).toLocaleString('en-PK',{timeZone:'Asia/Karachi'});
+      const div = document.createElement('div');
+      div.className = 'history-item';
+      div.innerHTML = '<div style="flex:1"><div class="h-date">'+date+'</div><div class="h-title">Session — '+(d.grade==='olevel'?'O Level':'Grade 1-8')+'</div><div class="h-count">'+(d.imageCount||0)+' image(s)</div></div><button class="btn-history-pdf" onclick="downloadHistoryPdf('+idx+')">Download PDF</button>';
+      list.appendChild(div);
+    });
+  }
+
+  async function saveSession(results, imageCount) {
+    const sessionData = {createdAt:new Date().toISOString(),grade:selectedGrade,imageCount,results};
+    if (firebaseReady && db) {
+      try {
+        await db.collection('students').doc(currentStudentId).collection('sessions').add(sessionData);
+        await db.collection('students').doc(currentStudentId).update({totalSessions:firebase.firestore.FieldValue.increment(1),totalImages:firebase.firestore.FieldValue.increment(imageCount)});
+      } catch(e) {}
+    }
+    const history = lsGet('ld_history_'+currentStudentId) || [];
+    history.unshift(sessionData);
+    lsSet('ld_history_'+currentStudentId, history.slice(0,20));
+    const stats = lsGet('ld_stats_'+currentStudentId) || {sessions:0,images:0};
+    stats.sessions++; stats.images += imageCount;
+    lsSet('ld_stats_'+currentStudentId, stats);
+    document.getElementById('saveStatus').style.display = 'block';
+    setTimeout(() => document.getElementById('saveStatus').style.display = 'none', 3000);
+    await loadStudentStats(currentStudentId);
+    await loadHistory(currentStudentId);
+  }
+
+  function downloadHistoryPdf(idx) {
+    const s = sessionHistory[idx];
+    if (!s || !s.results) return;
+    generatePDF(s.results, currentStudentId, s.grade||selectedGrade, new Date(s.createdAt).toLocaleString('en-PK',{timeZone:'Asia/Karachi'}));
+  }
+
+  // ── PDF GENERATOR ─────────────────────────────────────────
+  function generatePDF(resultsData, studentId, grade, dateStr) {
+    const {jsPDF} = window.jspdf;
+    const pdf = new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
+    const margin = 18, cw = 174;
+    let y = 20;
+
+    function newPage() { pdf.addPage(); y = 20; }
+    function need(h) { if (y + h > 278) newPage(); }
+
+    function block(text, fs, bold, rgb) {
+      if (!text) return;
+      pdf.setFontSize(fs);
+      pdf.setFont('helvetica', bold ? 'bold' : 'normal');
+      pdf.setTextColor(rgb[0], rgb[1], rgb[2]);
+      const lh = fs * 0.45;
+      const lines = pdf.splitTextToSize(String(text), cw);
+      lines.forEach(ln => { need(lh + 1.5); pdf.text(ln, margin, y); y += lh + 1.5; });
+      y += 2;
+    }
+
+    // Cover header
+    pdf.setFillColor(15,31,23); pdf.rect(0,0,210,44,'F');
+    pdf.setFontSize(22); pdf.setFont('helvetica','bold'); pdf.setTextColor(201,168,76);
+    pdf.text('Learning Den AI', margin, 18);
+    pdf.setFontSize(10); pdf.setFont('helvetica','normal'); pdf.setTextColor(154,191,168);
+    pdf.text('Learn · Evolve · Win', margin, 27);
+    const info = 'Student: '+studentId+'   |   '+(grade==='olevel'?'O Level':'Grade 1-8')+'   |   '+dateStr;
+    pdf.text(info, margin, 37);
+    y = 56;
+
+    resultsData.forEach((item, i) => {
+      if (!item) return;
+      need(16);
+      // Green image header bar
+      pdf.setFillColor(26,107,60);
+      pdf.rect(margin, y, cw, 13, 'F');
+      pdf.setFontSize(11); pdf.setFont('helvetica','bold'); pdf.setTextColor(255,255,255);
+      const title = 'IMAGE '+(i+1)+(item.name ? ': '+item.name.replace(/\.[^.]+$/,'') : '');
+      pdf.text(title, margin+3, y+9);
+      y += 17;
+
+      if (item.keypoints && item.keypoints !== 'Not found') { block('KEY POINTS',10,true,[26,107,60]); block(item.keypoints,9.5,false,[28,43,34]); }
+      if (item.summary && item.summary !== 'Not found') { block('SUMMARY NOTES',10,true,[26,107,60]); block(item.summary,9.5,false,[28,43,34]); }
+      if (item.qanda && item.qanda !== 'Not found') { block('EXAM Q&A',10,true,[26,107,60]); block(item.qanda,9.5,false,[28,43,34]); }
+      if (item.fillblanks && item.fillblanks !== 'None found' && item.fillblanks !== 'Not found') { block('FILL IN THE BLANKS',10,true,[26,107,60]); block(item.fillblanks,9.5,false,[28,43,34]); }
+      if (item.bookquestions && item.bookquestions !== 'None found' && item.bookquestions !== 'Not found') { block('BOOK QUESTIONS',10,true,[26,107,60]); block(item.bookquestions,9.5,false,[28,43,34]); }
+
+      y += 4;
+      if (i < resultsData.length - 1) {
+        need(8);
+        pdf.setDrawColor(208,232,216);
+        pdf.line(margin, y, margin+cw, y);
+        y += 10;
+      }
+    });
+
+    const pages = pdf.getNumberOfPages();
+    for (let p = 1; p <= pages; p++) {
+      pdf.setPage(p);
+      pdf.setFontSize(8); pdf.setFont('helvetica','normal'); pdf.setTextColor(120,150,130);
+      pdf.text('Learning Den AI  |  Page '+p+' of '+pages, margin, 292);
+    }
+    pdf.save('LearningDen_'+studentId+'_'+Date.now()+'.pdf');
+  }
+
+  // ── UI HELPERS ────────────────────────────────────────────
+  function saveKey() {
+    const key = document.getElementById('apiKeyInput').value.trim();
+    if (!key.startsWith('sk-ant')) {
+      document.getElementById('apiStatus').textContent = 'Invalid key — should start with sk-ant...';
+      document.getElementById('apiStatus').className = 'api-status err'; return;
+    }
+    apiKey = key; lsSet('ld_api_key', key);
+    document.getElementById('apiStatus').textContent = 'API key saved!';
+    document.getElementById('apiStatus').className = 'api-status ok';
+    checkReady();
+  }
+
+  function selectGrade(btn, grade) {
+    document.querySelectorAll('.grade-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active'); selectedGrade = grade;
+  }
+
+  function handleDrop(e) { e.preventDefault(); document.getElementById('uploadCard').classList.remove('dragover'); addFiles(e.dataTransfer.files); }
+  function handleFiles(files) { addFiles(files); document.getElementById('fileInput').value = ''; }
+
+  function addFiles(files) {
+    const remaining = 20 - uploadedImages.length;
+    if (remaining <= 0) { showError('Maximum 20 images already selected.'); return; }
+    const toAdd = Array.from(files).filter(f => f.type.startsWith('image/')).slice(0, remaining);
+    if (!toAdd.length) return;
+    let loaded = 0;
+    toAdd.forEach(file => {
+      const reader = new FileReader();
+      reader.onload = e => {
+        uploadedImages.push({name:file.name, base64:e.target.result.split(',')[1], mime:file.type||'image/jpeg', src:e.target.result});
+        if (++loaded === toAdd.length) { renderGrid(); checkReady(); }
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  function removeImage(i) { uploadedImages.splice(i,1); renderGrid(); checkReady(); }
+
+  function clearAll() {
+    uploadedImages = []; renderGrid(); checkReady();
+    document.getElementById('results').innerHTML = '';
+    document.getElementById('results').style.display = 'none';
+  }
+
+  function renderGrid() {
+    const grid = document.getElementById('imageGrid');
+    grid.innerHTML = '';
+    if (!uploadedImages.length) {
+      document.getElementById('imageCounter').style.display = 'none';
+      document.getElementById('generateLabel').textContent = 'Generate Study Material'; return;
+    }
+    document.getElementById('imageCounter').style.display = 'flex';
+    document.getElementById('counterText').textContent = uploadedImages.length+' image(s) selected';
+    document.getElementById('generateLabel').textContent = 'Generate Material for '+uploadedImages.length+' Image(s)';
+    uploadedImages.forEach((img,i) => {
+      const div = document.createElement('div'); div.className = 'img-thumb';
+      div.innerHTML = '<img src="'+img.src+'"><button class="remove-btn" onclick="removeImage('+i+')">✕</button><span class="img-num">'+(i+1)+'</span>';
+      grid.appendChild(div);
+    });
+  }
+
+  function checkReady() { document.getElementById('generateBtn').disabled = !(apiKey && uploadedImages.length > 0 && currentStudentId); }
+
+  function showError(msg) {
+    const box = document.getElementById('errorBox');
+    box.textContent = msg; box.style.display = 'block';
+    setTimeout(() => box.style.display = 'none', 8000);
+  }
+
+  function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+  function copySingle(i) {
+    if (!allResultTexts[i]) return;
+    navigator.clipboard.writeText(allResultTexts[i]).then(() => {
+      const btns = document.querySelectorAll('.btn-copy-single');
+      if (btns[i]) { btns[i].textContent='Copied!'; setTimeout(()=>btns[i].textContent='Copy',2000); }
+    });
+  }
+
+  function copyAllResults() {
+    navigator.clipboard.writeText(allResultTexts.join('\n\n'+'='.repeat(50)+'\n\n')).then(() => {
+      const btn = document.getElementById('copyAllBtn');
+      if (btn) { btn.textContent='Copied!'; setTimeout(()=>btn.textContent='Copy All',2000); }
+    });
+  }
+
+  function downloadPDF() {
+    generatePDF(allResultData, currentStudentId, selectedGrade, new Date().toLocaleString('en-PK',{timeZone:'Asia/Karachi'}));
+  }
+
+  // ── SINGLE API CALL — ALL IMAGES AT ONCE ──────────────────
+  async function callClaudeAllAtOnce(images) {
+    const gradeLabel = selectedGrade === 'olevel' ? 'Cambridge O Level' : 'Grade 1-8 Pakistani school';
+    const n = images.length;
+
+    // Build message content: image blocks first, then the prompt
+    const content = [];
+    images.forEach((img, i) => {
+      content.push({type:'text', text:'=== IMAGE '+(i+1)+' of '+n+' ==='});
+      content.push({type:'image', source:{type:'base64', media_type:img.mime, data:img.base64}});
+    });
+
+    const prompt =
+`You are a master educator at Learning Den academy. A ${gradeLabel} student has uploaded ${n} image(s) of their textbook.
+
+Produce detailed study material for EVERY image. Use this EXACT format for each image:
+
+[IMAGE_1_START]
+---KEY POINTS---
+(Numbered list of all key facts, concepts, terms and definitions from this page. Be complete.)
+
+---SUMMARY NOTES---
+(Thorough summary covering everything on this page. Use simple, clear language. Paragraphs are fine.)
+
+---EXAM Q&A---
+(8-10 exam questions with full model answers covering easy, medium and hard difficulty.
+Format exactly:
+Q1: question here
+A1: complete answer here
+
+Q2: question here
+A2: complete answer here)
+
+---FILL IN THE BLANKS---
+(8 sentences with one word blanked out, testing key facts. Include answers.
+Format exactly:
+1. The _______ ruled the empire from [city].
+Answer: king
+
+2. ...)
+
+---BOOK QUESTIONS---
+(ONLY copy questions that appear inside exercise boxes, assessment sections, practice sections, review sections, or end-of-chapter questions visible in the image. Copy each question word for word, then give a complete model answer.
+Format exactly:
+BQ1: [question exactly as written in book]
+BA1: [complete model answer]
+
+If no such exercise/assessment questions appear in this image, write exactly: None found)
+[IMAGE_1_END]
+
+[IMAGE_2_START]
+(same format for image 2)
+[IMAGE_2_END]
+
+(continue for all ${n} images)
+
+IMPORTANT RULES:
+- Use PLAIN TEXT only. No asterisks, no ** bold **, no markdown formatting.
+- Use numbers for lists (1. 2. 3.) not dashes or bullets.
+- Every answer must be thorough and complete so a student can score full marks.
+- Produce output for EVERY image — do not skip any.
+- Make content appropriate for ${gradeLabel} level.`;
+
+    content.push({type:'text', text:prompt});
+
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-client-side-allow-cors': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-opus-4-5',
+        max_tokens: 8000,
+        messages: [{role:'user', content}]
+      })
+    });
+
+    const data = await resp.json();
+    if (!resp.ok) throw new Error(data.error?.message || 'API error '+resp.status);
+    return data.content[0].text;
+  }
+
+  // ── PARSE RESPONSE INTO PER-IMAGE OBJECTS ─────────────────
+  function parseResponse(text, images) {
+    const results = [];
+    for (let i = 0; i < images.length; i++) {
+      const n = i+1;
+      const startTag = '[IMAGE_'+n+'_START]';
+      const endTag   = '[IMAGE_'+n+'_END]';
+      let block = '';
+
+      const si = text.indexOf(startTag);
+      const ei = text.indexOf(endTag);
+      if (si !== -1 && ei !== -1 && ei > si) {
+        block = text.substring(si + startTag.length, ei).trim();
+      } else {
+        // fallback: grab between consecutive IMAGE markers
+        const re = new RegExp('\\[IMAGE_'+n+'_START\\]([\\s\\S]*?)(?:\\[IMAGE_'+(n+1)+'_START\\]|$)', 'i');
+        const m = text.match(re);
+        block = m ? m[1].trim() : '';
+      }
+
+      function sec(startLabel, ...stopLabels) {
+        const re1 = new RegExp('---'+startLabel+'---([\\s\\S]*?)(?:---(?:'+stopLabels.join('|')+')---|$)', 'i');
+        const m = block.match(re1);
+        return m ? m[1].trim() : 'Not found';
+      }
+
+      results.push({
+        name:          images[i].name,
+        keypoints:     sec('KEY POINTS',     'SUMMARY NOTES','EXAM Q&A','FILL IN THE BLANKS','BOOK QUESTIONS'),
+        summary:       sec('SUMMARY NOTES',  'EXAM Q&A','FILL IN THE BLANKS','BOOK QUESTIONS'),
+        qanda:         sec('EXAM Q&A',       'FILL IN THE BLANKS','BOOK QUESTIONS'),
+        fillblanks:    sec('FILL IN THE BLANKS','BOOK QUESTIONS'),
+        bookquestions: sec('BOOK QUESTIONS')
+      });
+    }
+    return results;
+  }
+
+  // ── MAIN GENERATE ─────────────────────────────────────────
+  async function generate() {
+    if (!apiKey || !uploadedImages.length || !currentStudentId) return;
+
+    const resultsDiv = document.getElementById('results');
+    resultsDiv.innerHTML = ''; resultsDiv.style.display = 'none';
+    document.getElementById('loader').classList.add('active');
+    document.getElementById('generateBtn').disabled = true;
+    document.getElementById('errorBox').style.display = 'none';
+    document.getElementById('saveStatus').style.display = 'none';
+
+    const n = uploadedImages.length;
+    document.getElementById('loaderText').textContent = 'Sending '+n+' image'+(n>1?'s':'')+' to AI...';
+    document.getElementById('loaderSub').textContent = 'AI is reading all images at once — usually 20 to 60 seconds';
+
+    allResultTexts = []; allResultData = [];
+
+    try {
+      const rawText = await callClaudeAllAtOnce(uploadedImages);
+      const parsed  = parseResponse(rawText, uploadedImages);
+      const dateStr  = new Date().toLocaleString('en-PK',{timeZone:'Asia/Karachi'});
+
+      // Header card
+      const header = document.createElement('div');
+      header.className = 'overall-summary';
+      header.innerHTML =
+        '<h2>Study Material Ready</h2>' +
+        '<p>'+n+' image(s) &nbsp;·&nbsp; '+(selectedGrade==='olevel'?'O Level':'Grade 1-8')+' &nbsp;·&nbsp; '+currentStudentId+' &nbsp;·&nbsp; '+dateStr+'</p>' +
+        '<div class="overall-actions">'+
+          '<button class="btn-gold" onclick="downloadPDF()">⬇ Download PDF</button>'+
+          '<button class="btn-outline-white" id="copyAllBtn" onclick="copyAllResults()">Copy All</button>'+
+        '</div>';
+      resultsDiv.appendChild(header);
+
+      parsed.forEach((item, i) => {
+        allResultTexts.push(
+          'IMAGE '+(i+1)+': '+item.name+
+          '\n\nKEY POINTS\n\n'+item.keypoints+
+          '\n\nSUMMARY NOTES\n\n'+item.summary+
+          '\n\nEXAM Q&A\n\n'+item.qanda+
+          '\n\nFILL IN THE BLANKS\n\n'+item.fillblanks+
+          '\n\nBOOK QUESTIONS\n\n'+item.bookquestions
+        );
+        allResultData.push(item);
+
+        const showFill = item.fillblanks && !['None found','Not found'].includes(item.fillblanks);
+        const showBook = item.bookquestions && !['None found','Not found'].includes(item.bookquestions);
+
+        const block = document.createElement('div');
+        block.className = 'image-result-block';
+        block.innerHTML =
+          '<div class="image-result-header">'+
+            '<img src="'+uploadedImages[i].src+'">'+
+            '<div>'+
+              '<div class="img-title">Image '+(i+1)+': '+esc(item.name)+'</div>'+
+              '<div class="img-sub">'+(selectedGrade==='olevel'?'O Level':'Grade 1-8')+' &nbsp;·&nbsp; '+currentStudentId+'</div>'+
+            '</div>'+
+            '<button class="btn-copy-single" onclick="copySingle('+i+')">Copy</button>'+
+          '</div>'+
+          '<div class="result-section"><div class="section-header"><span class="section-icon">🔑</span><span class="section-title">Key Points</span></div><div class="section-body">'+esc(item.keypoints)+'</div></div>'+
+          '<div class="result-section"><div class="section-header"><span class="section-icon">📝</span><span class="section-title">Summary Notes</span></div><div class="section-body">'+esc(item.summary)+'</div></div>'+
+          '<div class="result-section"><div class="section-header"><span class="section-icon">❓</span><span class="section-title">Exam Q&A</span></div><div class="section-body">'+esc(item.qanda)+'</div></div>'+
+          (showFill ? '<div class="result-section"><div class="section-header"><span class="section-icon">✏️</span><span class="section-title">Fill in the Blanks</span></div><div class="section-body">'+esc(item.fillblanks)+'</div></div>' : '')+
+          (showBook ? '<div class="result-section"><div class="section-header"><span class="section-icon">📖</span><span class="section-title">Book Questions</span></div><div class="section-body">'+esc(item.bookquestions)+'</div></div>' : '');
+
+        resultsDiv.appendChild(block);
+      });
+
+      resultsDiv.style.display = 'block';
+      resultsDiv.scrollIntoView({behavior:'smooth', block:'start'});
+      await saveSession(allResultData, n);
+
+    } catch(err) {
+      showError('Error: '+err.message);
+    }
+
+    document.getElementById('loader').classList.remove('active');
+    document.getElementById('generateBtn').disabled = false;
+    checkReady();
+  }
+
+  // ── BOOT ─────────────────────────────────────────────────
+  initFirebase().then(() => {
+    const saved = lsGet('ld_student_id');
+    if (saved) { currentStudentId = saved; initApp(saved); }
+  });
+</script>
+</body>
+</html>
