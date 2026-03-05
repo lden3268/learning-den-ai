@@ -261,6 +261,8 @@ footer{background:var(--navy);text-align:center;padding:28px 20px;border-top:2px
         <p>Your teacher has given you a unique Student ID. Enter it below to access Learning DEN AI.</p>
         <input class="ifield upper" type="text" id="studentIdInput" placeholder="e.g. LD-001" maxlength="20"
           onkeydown="if(event.key==='Enter') doLogin()" oninput="this.value=this.value.toUpperCase()">
+        <input class="ifield" type="password" id="studentPwInput" placeholder="Password" maxlength="30"
+          onkeydown="if(event.key==='Enter') doLogin()">
         <button class="btn-primary" id="loginBtn" onclick="doLogin()">Enter Learning DEN</button>
         <div class="login-err" id="loginErr"></div>
       </div>
@@ -269,6 +271,7 @@ footer{background:var(--navy);text-align:center;padding:28px 20px;border-top:2px
     <div id="mainApp" style="display:none;">
       <div class="student-bar">
         <div><div class="sb-name" id="sbName"></div><div class="sb-stats" id="sbStats">Sessions: 0 &nbsp;&middot;&nbsp; Images: 0</div></div>
+        <button class="btn-sm" onclick="openChangePw()">Change Password</button>
         <button class="btn-sm" onclick="doLogout()">Change ID</button>
       </div>
 
@@ -361,6 +364,22 @@ footer{background:var(--navy);text-align:center;padding:28px 20px;border-top:2px
   </div>
 </div>
 
+<!-- CHANGE PASSWORD MODAL -->
+<div id="changePwModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:999;align-items:center;justify-content:center;">
+  <div style="background:white;border-radius:18px;padding:36px;max-width:400px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,0.25);">
+    <h3 style="font-family:'Playfair Display',serif;font-size:20px;color:var(--navy);margin-bottom:6px;">Change Password</h3>
+    <p style="font-size:13px;color:var(--muted);margin-bottom:20px;">Enter your current password then choose a new one.</p>
+    <input class="ifield" type="password" id="cpCurrent" placeholder="Current password" maxlength="30">
+    <input class="ifield" type="password" id="cpNew" placeholder="New password" maxlength="30">
+    <input class="ifield" type="password" id="cpConfirm" placeholder="Confirm new password" maxlength="30">
+    <div id="cpMsg" style="display:none;font-size:13px;padding:9px 14px;border-radius:8px;margin-bottom:10px;"></div>
+    <div style="display:flex;gap:10px;margin-top:4px;">
+      <button class="btn-primary" onclick="doChangePw()" style="flex:1;">Save Password</button>
+      <button class="btn-sm" onclick="closeChangePw()" style="flex:0.5;">Cancel</button>
+    </div>
+  </div>
+</div>
+
 <!-- TEACHER PAGE -->
 <div id="teacherPage">
   <div style="background:linear-gradient(135deg,#1e3a5f,#2a5080);padding:36px 28px 44px;text-align:center;">
@@ -398,6 +417,10 @@ footer{background:var(--navy);text-align:center;padding:28px 20px;border-top:2px
       <div class="students-card">
         <div class="sc-hd"><h3>Approved Students</h3><span id="approvedCount"></span></div>
         <div id="approvedList"><div style="padding:14px 18px;color:var(--muted);font-size:14px;">Loading...</div></div>
+      </div>
+      <div class="students-card" style="margin-top:18px;">
+        <div class="sc-hd"><h3>&#128276; Password Change Alerts</h3><button class="btn-sm" onclick="clearPwNotifications()" style="font-size:12px;">Clear All</button></div>
+        <div id="pwNotifList"><div style="padding:14px 18px;color:var(--muted);font-size:14px;">Loading...</div></div>
       </div>
       <div class="sessions-card">
         <div class="sessions-hd"><h3>Session Activity</h3></div>
@@ -494,11 +517,16 @@ function goTeacher(){
 
 async function doLogin(){
   var val = document.getElementById("studentIdInput").value.trim().toUpperCase();
+  var pw = document.getElementById("studentPwInput").value;
   var errEl = document.getElementById("loginErr");
   var btn = document.getElementById("loginBtn");
   errEl.style.display = "none";
   if(!val || val.length < 2){
     errEl.textContent = "Please enter your Student ID.";
+    errEl.style.display = "block"; return;
+  }
+  if(!pw){
+    errEl.textContent = "Please enter your password.";
     errEl.style.display = "block"; return;
   }
   btn.textContent = "Verifying..."; btn.disabled = true;
@@ -513,6 +541,12 @@ async function doLogin(){
       var data = snap.data();
       if(data.active === false){
         errEl.textContent = "Account deactivated. Please contact your teacher.";
+        errEl.style.display = "block";
+        btn.textContent = "Enter Learning DEN"; btn.disabled = false; return;
+      }
+      var storedPw = data.password || "1111";
+      if(pw !== storedPw){
+        errEl.textContent = "Incorrect password. Please try again.";
         errEl.style.display = "block";
         btn.textContent = "Enter Learning DEN"; btn.disabled = false; return;
       }
@@ -539,6 +573,7 @@ function doLogout(){
   document.getElementById("mainApp").style.display = "none";
   document.getElementById("headerBadge").style.display = "none";
   document.getElementById("studentIdInput").value = "";
+  document.getElementById("studentPwInput").value = "";
   document.getElementById("resultsArea").innerHTML = "";
   document.getElementById("resultsArea").style.display = "none";
   uploadedImages = []; renderGrid();
@@ -1037,6 +1072,7 @@ function doTeacherLogin(){
 }
 async function loadTeacherDashboard(){
   await loadApprovedStudents();
+  await loadPwNotifications();
   if(!fbReady||!db){ document.getElementById("sessionsList").innerHTML="<div style=\"padding:14px;color:var(--muted)\">Firebase not connected.</div>"; return; }
   try{
     var snap = await db.collection("students").get();
@@ -1080,7 +1116,8 @@ async function loadApprovedStudents(){
       delBtn.textContent = "Remove";
       delBtn.onclick = function(){ removeStudent(d.studentId, d.name); };
       var info = document.createElement("div");
-      info.innerHTML = "<div class=\"s-name\">"+d.name+"</div><div class=\"s-id\">"+d.studentId+(d.class?" \u00b7 "+d.class:"")+"</div>";
+      var pwDisplay = d.password || "1111";
+      info.innerHTML = "<div class=\"s-name\">"+d.name+"</div><div class=\"s-id\">"+d.studentId+(d.class?" \u00b7 "+d.class:"")+"</div><div class=\"s-id\" style=\"margin-top:3px;\">&#128274; Password: <strong>"+pwDisplay+"</strong></div>";
       var btns = document.createElement("div"); btns.className = "s-btns";
       btns.appendChild(togBtn); btns.appendChild(delBtn);
       row.appendChild(info); row.appendChild(badge); row.appendChild(btns);
@@ -1098,7 +1135,7 @@ async function addStudent(){
   try{
     var ex=await db.collection("approvedStudents").doc(idVal).get();
     if(ex.exists){ showAddMsg("ID "+idVal+" already exists.","warn"); return; }
-    await db.collection("approvedStudents").doc(idVal).set({studentId:idVal,name:nameVal,class:classVal||"",active:true,addedAt:new Date().toISOString()});
+    await db.collection("approvedStudents").doc(idVal).set({studentId:idVal,name:nameVal,class:classVal||"",active:true,password:"1111",addedAt:new Date().toISOString()});
     showAddMsg(nameVal+" ("+idVal+") added!","ok");
     document.getElementById("newId").value="";
     document.getElementById("newName").value="";
@@ -1124,6 +1161,72 @@ async function removeStudent(sid, name){
   if(!fbReady||!db) return;
   try{ await db.collection("approvedStudents").doc(sid).delete(); await loadApprovedStudents(); }
   catch(e){ alert("Error: "+e.message); }
+}
+
+function openChangePw(){
+  document.getElementById("cpCurrent").value="";
+  document.getElementById("cpNew").value="";
+  document.getElementById("cpConfirm").value="";
+  document.getElementById("cpMsg").style.display="none";
+  var m=document.getElementById("changePwModal"); m.style.display="flex";
+}
+function closeChangePw(){
+  document.getElementById("changePwModal").style.display="none";
+}
+function showCpMsg(text,ok){
+  var el=document.getElementById("cpMsg");
+  el.textContent=text; el.style.display="block";
+  el.style.background=ok?"#f0fff4":"#fff5f5";
+  el.style.color=ok?"#2d6a4f":"#c0392b";
+  el.style.border="1px solid "+(ok?"#b7e4c7":"#f5c6c6");
+}
+async function doChangePw(){
+  var cur=document.getElementById("cpCurrent").value;
+  var nw=document.getElementById("cpNew").value;
+  var cf=document.getElementById("cpConfirm").value;
+  if(!cur||!nw||!cf){ showCpMsg("Please fill in all fields.",false); return; }
+  if(nw.length < 4){ showCpMsg("New password must be at least 4 characters.",false); return; }
+  if(nw !== cf){ showCpMsg("New passwords do not match.",false); return; }
+  if(!fbReady||!db){ showCpMsg("Not connected. Try again.",false); return; }
+  try{
+    var snap = await db.collection("approvedStudents").doc(studentId).get();
+    if(!snap.exists){ showCpMsg("Account not found.",false); return; }
+    var storedPw = snap.data().password || "1111";
+    if(cur !== storedPw){ showCpMsg("Current password is incorrect.",false); return; }
+    await db.collection("approvedStudents").doc(studentId).update({password: nw});
+    await db.collection("passwordNotifications").add({
+      studentId: studentId,
+      studentName: studentName,
+      newPassword: nw,
+      changedAt: new Date().toISOString()
+    });
+    showCpMsg("Password changed successfully!",true);
+    setTimeout(function(){ closeChangePw(); },1800);
+  }catch(e){ showCpMsg("Error: "+e.message,false); }
+}
+async function loadPwNotifications(){
+  var listEl = document.getElementById("pwNotifList");
+  if(!fbReady||!db){ listEl.innerHTML="<div style=\"padding:14px;color:var(--muted)\">Firebase not connected.</div>"; return; }
+  try{
+    var snap = await db.collection("passwordNotifications").orderBy("changedAt","desc").limit(50).get();
+    if(snap.empty){ listEl.innerHTML="<div style=\"padding:14px 18px;color:var(--muted);font-size:14px;\">No password changes yet.</div>"; return; }
+    listEl.innerHTML = snap.docs.map(function(doc){
+      var d=doc.data();
+      var dt=new Date(d.changedAt).toLocaleString("en-PK",{timeZone:"Asia/Karachi"});
+      return "<div class=\"s-row\"><div><div class=\"s-name\">"+d.studentName+" ("+d.studentId+")</div><div class=\"s-id\">"+dt+"</div></div><div class=\"s-id\" style=\"text-align:right;\">New password:<br><strong>"+d.newPassword+"</strong></div></div>";
+    }).join("");
+  }catch(e){ listEl.innerHTML="<div style=\"padding:14px;color:var(--muted)\">Error: "+e.message+"</div>"; }
+}
+async function clearPwNotifications(){
+  if(!confirm("Clear all password change alerts?")) return;
+  if(!fbReady||!db) return;
+  try{
+    var snap = await db.collection("passwordNotifications").get();
+    var batch = db.batch();
+    snap.docs.forEach(function(d){ batch.delete(d.ref); });
+    await batch.commit();
+    await loadPwNotifications();
+  }catch(e){ alert("Error: "+e.message); }
 }
 
 // Run immediately so buttons work right away
