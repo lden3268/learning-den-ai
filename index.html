@@ -548,8 +548,8 @@ function doLogout(){
 async function startApp(){
   document.getElementById("loginBox").style.display = "none";
   document.getElementById("mainApp").style.display = "block";
-  document.getElementById("sbName").textContent = studentName + " (" + studentId + ")";
-  document.getElementById("headerBadge").textContent = studentId;
+  document.getElementById("sbName").textContent = studentName;
+  document.getElementById("headerBadge").textContent = studentName;
   document.getElementById("headerBadge").style.display = "block";
   // API key is hardcoded
   showMainApp();
