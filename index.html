@@ -249,6 +249,7 @@ footer{background:var(--navy);text-align:center;padding:28px 20px;border-top:2px
 
 </head>
 <body>
+<img id="denLogo" src="logo.png" crossorigin="anonymous" style="display:none" alt="">
 
 <header>
   <div class="logo-wrap">
@@ -1075,11 +1076,11 @@ function doCopy(btn){
 
 function doPDF(){
   if(!allResultData.length) return;
-  var d = allResultData[0];
+  var sections = allResultData[0];
   var dateStr = new Date().toLocaleString("en-PK",{timeZone:"Asia/Karachi"});
   var gradeLabel = selGrade === "olevel" ? "O Level" : "Grade " + selSub;
   var chapter = document.getElementById("chapterInput").value.trim();
-  buildPDF(d, studentName, studentId, gradeLabel, selSubject, chapter, dateStr);
+  buildPDF({sections: sections}, studentName, studentId, gradeLabel, selSubject, chapter, dateStr);
 }
 
 function buildPDF(data, sName, sId, grade, subject, chapter, dateStr){
@@ -1087,7 +1088,9 @@ function buildPDF(data, sName, sId, grade, subject, chapter, dateStr){
   var pdf = new jsPDF({orientation:"portrait",unit:"mm",format:"a4"});
   var PW=210,PH=297,M=15,W=180;
   var SKY=[202,235,252],GOLD=[190,140,50],NAVY=[30,58,95],INK=[26,32,48],WH=[255,255,255],LGRAY=[246,248,250],DTEXT=[40,60,90];
-  var HEADER_H=24,FOOTER_Y=283;
+  var HEADER_H=28,FOOTER_Y=283;
+  var logoEl = document.getElementById('denLogo');
+  var logoOk = logoEl && logoEl.complete && logoEl.naturalWidth > 0;
   function setC(a){ pdf.setTextColor(a[0],a[1],a[2]); }
   function strip(t){ return (t||"").replace(/\*\*\*/g,"").replace(/\*\*/g,"").replace(/\*/g,"").trim(); }
   function initPage(){
@@ -1096,13 +1099,20 @@ function buildPDF(data, sName, sId, grade, subject, chapter, dateStr){
   function drawPage(pageNum,total){
     pdf.setFillColor(SKY[0],SKY[1],SKY[2]); pdf.rect(0,0,PW,HEADER_H,"F");
     pdf.setFillColor(GOLD[0],GOLD[1],GOLD[2]); pdf.rect(0,HEADER_H,PW,2,"F");
-    pdf.setFont("helvetica","bold"); pdf.setFontSize(14); setC(NAVY);
-    pdf.text("Learning DEN AI", M, 16);
+    // Logo in header (left side)
+    var textX = M;
+    if(logoOk){
+      try{ pdf.addImage(logoEl,'PNG',M,3,22,22); textX = M+25; }catch(e){}
+    }
+    pdf.setFont("helvetica","bold"); pdf.setFontSize(13); setC(NAVY);
+    pdf.text("Learning DEN AI", textX, 13);
     pdf.setFont("helvetica","normal"); pdf.setFontSize(7); setC(DTEXT);
+    pdf.text("Est. 2011", textX, 19);
     var nd = (sName && sName!==sId) ? sName + " (" + sId + ")" : sId;
     pdf.text(nd, PW-M, 8, {align:"right"});
-    pdf.text(grade + "  |  " + subject, PW-M, 14, {align:"right"});
-    if(chapter) pdf.text(chapter, PW-M, 20, {align:"right"});
+    pdf.text(grade + "  |  " + subject, PW-M, 15, {align:"right"});
+    if(chapter) pdf.text(chapter, PW-M, 22, {align:"right"});
+    // Footer
     pdf.setFillColor(SKY[0],SKY[1],SKY[2]); pdf.rect(0,FOOTER_Y,PW,PH-FOOTER_Y,"F");
     pdf.setFillColor(NAVY[0],NAVY[1],NAVY[2]); pdf.rect(0,FOOTER_Y,PW,0.5,"F");
     pdf.setFontSize(7); setC(DTEXT);
