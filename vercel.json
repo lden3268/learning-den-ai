@@ -1,0 +1,5 @@
+{
+  "rewrites": [
+    { "source": "/", "destination": "/learning-den-ai.html" }
+  ]
+}
