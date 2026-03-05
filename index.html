@@ -834,7 +834,7 @@ async function generateFromImages(images, chapter){
 
   var res = await fetch("/api/generate",{
     method:"POST",
-    headers:{"Content-Type":"application/json","x-internal-token":"__INTERNAL_SECRET__"},
+    headers:{"Content-Type":"application/json","x-internal-token":"ldai-9k2x7mQ3vR"},
     body:JSON.stringify({model:"claude-opus-4-6", max_tokens:6000, messages:[{role:"user", content:content}]})
   });
   var data = await res.json();
