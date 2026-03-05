@@ -850,10 +850,11 @@ async function generateFromImages(images, chapter){
     "These go in the BOOK QUESTIONS section at the end.\n\n" +
     "YOUR GOAL: Create study material so thorough and well-crafted that a student who studies only this material is GUARANTEED to score an A grade.\n\n" +
     "RULES:\n" +
-    "1. Use PLAIN TEXT only. No asterisks, no dashes, no markdown symbols.\n" +
-    "2. Write neatly using numbers and clear labels.\n" +
-    "3. Every answer must be complete. Never leave a student wondering.\n" +
-    "4. Use the correct level of depth for this grade and subject.\n\n" +
+    "1. Use PLAIN TEXT only for all content. No asterisks, no hashtags, no markdown formatting.\n" +
+    "2. CRITICAL: You MUST output every section header EXACTLY as written below, including the triple dashes e.g. ---KEY POINTS--- . Do NOT skip or rename any header.\n" +
+    "3. Write neatly using numbers and clear labels.\n" +
+    "4. Every answer must be complete. Never leave a student wondering.\n" +
+    "5. Use the correct level of depth for this grade and subject.\n\n" +
     examSections +
     "---BOOK QUESTIONS---\n" +
     "Find every exercise/assessment question visible in the images.\n" +
@@ -878,19 +879,20 @@ async function generateFromImages(images, chapter){
 }
 
 function parseResult(text){
-  function get(from, to){
-    var esc = function(s){ return s.replace(/[-\/\\^$*+?.()|[\]{}]/g,"\\$&"); };
-    var rx = new RegExp(esc(from) + "([\\s\\S]*?)(?=" + esc(to) + "|$)","i");
+  // Match section headers with or without surrounding dashes e.g. ---KEY POINTS--- or KEY POINTS
+  function flex(name){ return "-*\\s*" + name.replace(/\s+/g,"\\s+") + "\\s*-*"; }
+  function get(fromName, toName){
+    var rx = new RegExp(flex(fromName) + "\\s*\\n([\\s\\S]*?)(?=" + flex(toName) + "|$)","i");
     var m = text.match(rx);
     return m ? m[1].trim() : "";
   }
   return {
-    keypoints:  get("---KEY POINTS---",        "---SUMMARY NOTES---"),
-    summary:    get("---SUMMARY NOTES---",      "---EXAM Q&A---"),
-    qanda:      get("---EXAM Q&A---",           "---FILL IN THE BLANKS---"),
-    fillblanks: get("---FILL IN THE BLANKS---", "---ADDITIONAL NOTES---"),
-    additional: get("---ADDITIONAL NOTES---",   "---BOOK QUESTIONS---"),
-    bookqs: (function(){ var m=text.match(/---BOOK QUESTIONS---([\s\S]*)$/i); return m?m[1].trim():""; })()
+    keypoints:  get("KEY POINTS",        "SUMMARY NOTES"),
+    summary:    get("SUMMARY NOTES",     "EXAM Q&A"),
+    qanda:      get("EXAM Q&A",          "FILL IN THE BLANKS"),
+    fillblanks: get("FILL IN THE BLANKS","ADDITIONAL NOTES"),
+    additional: get("ADDITIONAL NOTES",  "BOOK QUESTIONS"),
+    bookqs: (function(){ var m=text.match(/-*\s*BOOK QUESTIONS\s*-*\s*\n([\s\S]*)$/i); return m?m[1].trim():""; })()
   };
 }
 
