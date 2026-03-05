@@ -941,11 +941,17 @@ async function generateFromImages(images, chapter){
     "Subject: " + subj + ". Grade: " + gradeLabel + ". " + chCtx + "\n" +
     "You are looking at " + total + " textbook page image(s). Read every image carefully.\n" +
     depthNote + "\n\n" +
-    "Also look for any exercise or assessment questions in the images. These appear as:\n" +
-    "  - Numbered or lettered items inside boxes or shaded sections\n" +
-    "  - Sections labelled: Assessment, Exercises, Practice, Review, Activities, Questions, End of Chapter, Recall, Check Your Understanding\n" +
+    "As an experienced educator, scan the images for FORMAL exercise or assessment questions ONLY. These are:\n" +
+    "  - Numbered or lettered questions inside a clearly marked exercise/assessment box or section\n" +
+    "  - Sections with headings like: Assessment, Exercises, Practice, Review, Activities, Questions, End of Chapter, Recall, Check Your Understanding, Test Yourself\n" +
     "  - Fill in the blank items (sentences with ___ or blank spaces)\n" +
-    "  - Tasks like: Define, Explain, Compare, Evaluate, Discuss, Give reasons\n" +
+    "  - Formal tasks like: Define, Explain, Compare, Evaluate, Discuss, Give reasons\n" +
+    "IMPORTANT — DO NOT include any of the following as book questions:\n" +
+    "  - Dialogue or conversation between characters, a teacher, or a narrator and student in the main text\n" +
+    "  - Rhetorical or discussion questions embedded inside the reading passage itself\n" +
+    "  - Questions that appear as part of a story, scenario, or example — not as a formal task for the student\n" +
+    "  - Any text that reads like a conversation (e.g. 'So, was the Gupta period a golden age?' / 'I'm confused...' style)\n" +
+    "If the images contain ONLY dialogue/story content and no formal exercise section, write: None found.\n" +
     "These go in the BOOK QUESTIONS section at the end.\n\n" +
     "YOUR GOAL: Create study material so thorough and well-crafted that a student who studies only this material is GUARANTEED to score an A grade.\n\n" +
     "RULES:\n" +
@@ -956,11 +962,12 @@ async function generateFromImages(images, chapter){
     "5. Use the correct level of depth for this grade and subject.\n\n" +
     examSections +
     "---BOOK QUESTIONS---\n" +
-    "Find every exercise/assessment question visible in the images.\n" +
-    "Write each question exactly as it appears and provide a complete model answer that would score full marks.\n" +
+    "Find every FORMAL exercise or assessment question visible in the images — only from clearly labelled exercise/assessment sections.\n" +
+    "Do NOT treat dialogue, conversation text, or rhetorical questions in the main reading as book questions.\n" +
+    "Write each formal question exactly as it appears and provide a complete model answer that would score full marks.\n" +
     "BQ1: [question exactly as in textbook]\n" +
     "BA1: [complete model answer]\n" +
-    "Continue for all questions. If none found write: None found.";
+    "Continue for all questions. If no formal exercise section is found, write: None found.";
 
   var content = images.map(function(img){
     return {type:"image", source:{type:"base64", media_type:img.mime, data:img.base64}};
