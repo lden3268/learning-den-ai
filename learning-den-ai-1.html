@@ -1,0 +1,1027 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Learning DEN AI — Learn, Evolve, Win</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+:root{
+  --navy:#1e3a5f;--navy2:#2a5080;--navy-pale:#deeaf7;
+  --gold:#c9943a;--gold2:#e8b84b;
+  --sky:#e8f4fd;--ink:#1a2030;--muted:#6b7a99;--border:#d8dff0;
+  --white:#f0f8fd;--card:#ffffff;--green:#2d6a4f;--red:#c0392b;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:"DM Sans",sans-serif;background:var(--white);color:var(--ink);min-height:100vh;}
+header{background:linear-gradient(135deg,var(--navy) 0%,var(--navy2) 100%);padding:12px 36px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:200;border-bottom:3px solid var(--gold);box-shadow:0 4px 20px rgba(30,58,95,0.3);}
+.logo-wrap{display:flex;align-items:center;gap:12px;}
+.logo-img{width:48px;height:48px;border-radius:50%;object-fit:cover;border:2px solid var(--gold);}
+.logo-name{font-family:"Playfair Display",serif;font-size:19px;color:white;}
+.logo-name span{color:var(--gold2);}
+.logo-sub{font-size:10px;color:#8899cc;letter-spacing:2px;text-transform:uppercase;margin-top:1px;}
+.header-right{display:flex;align-items:center;gap:10px;}
+.user-badge{background:var(--gold);color:var(--navy);padding:5px 14px;border-radius:20px;font-size:13px;font-weight:600;display:none;}
+.btn-hdr{background:transparent;border:1.5px solid rgba(255,255,255,0.25);color:white;padding:6px 14px;border-radius:8px;font-size:12px;cursor:pointer;font-family:"DM Sans",sans-serif;transition:all 0.2s;}
+.btn-hdr:hover{background:rgba(255,255,255,0.1);}
+.land-hero{background:linear-gradient(135deg,var(--navy) 0%,var(--navy2) 50%,#1a4a6b 100%);padding:80px 40px 90px;text-align:center;position:relative;overflow:hidden;}
+.land-hero::before{content:"";position:absolute;inset:0;background:radial-gradient(ellipse at 30% 50%,rgba(201,148,58,0.12) 0%,transparent 60%);pointer-events:none;}
+.hero-logo{width:160px;height:160px;border-radius:50%;object-fit:cover;border:5px solid var(--gold);margin:0 auto 24px;display:block;box-shadow:0 0 60px rgba(201,148,58,0.5);}
+.land-hero h1{font-family:"Playfair Display",serif;font-size:clamp(32px,5vw,58px);color:white;line-height:1.1;margin-bottom:14px;}
+.land-hero h1 em{color:var(--gold2);font-style:italic;}
+.land-hero p{font-size:16px;color:#aab5d5;max-width:580px;margin:0 auto 30px;line-height:1.8;}
+.hero-btns{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;}
+.btn-hero-p{padding:15px 34px;background:var(--gold);color:var(--navy);border:none;border-radius:12px;font-family:"Playfair Display",serif;font-size:17px;font-weight:700;cursor:pointer;transition:all 0.25s;}
+.btn-hero-p:hover{background:var(--gold2);transform:translateY(-2px);}
+.btn-hero-s{padding:15px 34px;background:transparent;color:white;border:2px solid rgba(255,255,255,0.3);border-radius:12px;font-family:"DM Sans",sans-serif;font-size:15px;cursor:pointer;}
+.btn-hero-s:hover{background:rgba(255,255,255,0.1);}
+.features{padding:66px 40px;background:var(--white);}
+.features h2{font-family:"Playfair Display",serif;font-size:34px;text-align:center;color:var(--navy);margin-bottom:8px;}
+.features-sub{text-align:center;color:var(--muted);font-size:15px;margin-bottom:44px;}
+.feat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:22px;max-width:960px;margin:0 auto;}
+.feat-card{background:var(--card);border:1.5px solid var(--border);border-radius:18px;padding:28px 24px;transition:all 0.25s;}
+.feat-card:hover{border-color:var(--gold);transform:translateY(-4px);box-shadow:0 12px 40px rgba(26,39,68,0.1);}
+.feat-icon{font-size:34px;margin-bottom:12px;}
+.feat-card h3{font-family:"Playfair Display",serif;font-size:17px;color:var(--navy);margin-bottom:6px;}
+.feat-card p{font-size:13px;color:var(--muted);line-height:1.7;}
+.stats-bar{background:var(--navy);padding:36px 40px;display:flex;justify-content:center;gap:54px;flex-wrap:wrap;}
+.stat-item{text-align:center;}
+.stat-num{font-family:"Playfair Display",serif;font-size:34px;color:var(--gold2);font-weight:700;}
+.stat-label{font-size:12px;color:#8899cc;letter-spacing:1px;text-transform:uppercase;margin-top:3px;}
+#appPage{display:none;}
+.container{max-width:860px;margin:0 auto;padding:40px 24px 80px;}
+.login-card{background:white;border:1.5px solid var(--border);border-radius:24px;padding:44px;text-align:center;max-width:480px;margin:0 auto;}
+.login-logo{width:80px;height:80px;border-radius:50%;object-fit:cover;border:3px solid var(--gold);margin:0 auto 18px;display:block;}
+.login-card h2{font-family:"Playfair Display",serif;font-size:25px;color:var(--navy);margin-bottom:7px;}
+.login-card p{font-size:14px;color:var(--muted);margin-bottom:26px;line-height:1.6;}
+.ifield{width:100%;padding:13px 16px;border:1.5px solid var(--border);border-radius:11px;font-family:"DM Sans",sans-serif;font-size:15px;outline:none;transition:border-color 0.2s;margin-bottom:10px;}
+.ifield:focus{border-color:var(--navy);}
+.ifield.upper{text-transform:uppercase;letter-spacing:2px;text-align:center;}
+.btn-primary{width:100%;padding:14px;background:var(--navy);color:white;border:none;border-radius:11px;font-family:"Playfair Display",serif;font-size:17px;cursor:pointer;transition:all 0.2s;}
+.btn-primary:hover:not(:disabled){background:var(--navy2);}
+.btn-primary:disabled{opacity:0.5;cursor:not-allowed;}
+.login-err{color:var(--red);font-size:13px;margin-top:8px;display:none;padding:9px 14px;background:#fff5f5;border-radius:8px;border:1px solid #f5c6c6;}
+.student-bar{background:var(--navy-pale);border:1px solid var(--border);border-radius:13px;padding:13px 18px;margin-bottom:22px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;}
+.sb-name{font-size:14px;color:var(--navy);font-weight:600;}
+.sb-stats{font-size:12px;color:var(--muted);}
+.btn-sm{background:none;border:1px solid var(--border);border-radius:7px;padding:5px 12px;font-size:12px;color:var(--muted);cursor:pointer;font-family:"DM Sans",sans-serif;}
+.btn-sm:hover{color:var(--red);border-color:var(--red);}
+.step-card{background:white;border:1.5px solid var(--border);border-radius:18px;padding:26px;margin-bottom:18px;}
+.step-label{font-size:11px;font-weight:600;color:var(--gold);letter-spacing:2px;text-transform:uppercase;margin-bottom:12px;}
+.sel-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px;}
+.sel-btn{padding:9px 15px;border:1.5px solid var(--border);border-radius:10px;background:white;font-family:"DM Sans",sans-serif;font-size:13px;font-weight:500;color:var(--muted);cursor:pointer;transition:all 0.15s;}
+.sel-btn:hover{border-color:var(--navy);color:var(--navy);}
+.sel-btn.active{background:linear-gradient(135deg,var(--navy),var(--navy2));border-color:var(--navy);color:white;}
+.grade-row{display:flex;gap:10px;}
+.grade-btn{flex:1;padding:14px;border:2px solid var(--border);border-radius:13px;background:white;font-family:"DM Sans",sans-serif;font-size:15px;font-weight:500;color:var(--muted);cursor:pointer;transition:all 0.25s;text-align:center;}
+.grade-btn:hover{border-color:var(--navy);color:var(--navy);}
+.grade-btn.active{background:linear-gradient(135deg,var(--navy),var(--navy2));border-color:var(--navy);color:white;}
+.chapter-input{width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:10px;font-family:"DM Sans",sans-serif;font-size:14px;outline:none;margin-top:12px;}
+.chapter-input:focus{border-color:var(--navy);}
+.api-section{background:var(--navy-pale);border:1px solid var(--border);border-radius:16px;padding:20px 24px;margin-bottom:18px;}
+.api-label{font-size:11px;font-weight:600;color:var(--navy);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:10px;}
+.api-row{display:flex;gap:8px;}
+.api-input{flex:1;padding:11px 14px;border:1.5px solid var(--border);border-radius:10px;font-family:"DM Sans",sans-serif;font-size:14px;background:white;outline:none;}
+.api-input:focus{border-color:var(--navy);}
+.btn-save{padding:11px 18px;background:var(--navy);color:white;border:none;border-radius:10px;font-family:"DM Sans",sans-serif;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;}
+.api-status{font-size:12px;margin-top:7px;color:var(--muted);}
+.api-status.ok{color:var(--green);font-weight:600;}
+.api-status.err{color:var(--red);font-weight:600;}
+.upload-zone{border:2px dashed var(--border);border-radius:16px;padding:38px 22px;text-align:center;cursor:pointer;transition:all 0.25s;position:relative;background:white;margin-bottom:12px;}
+.upload-zone:hover,.upload-zone.drag{border-color:var(--navy);background:var(--navy-pale);}
+.upload-zone input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
+.upload-icon{font-size:38px;margin-bottom:10px;}
+.upload-zone h3{font-family:"Playfair Display",serif;font-size:18px;margin-bottom:5px;}
+.upload-zone p{font-size:13px;color:var(--muted);}
+.badge-gold{display:inline-block;margin-top:9px;background:var(--gold);color:white;font-size:11px;font-weight:700;padding:3px 12px;border-radius:20px;}
+.img-counter{display:none;align-items:center;justify-content:space-between;margin-bottom:9px;padding:9px 14px;background:var(--navy-pale);border:1px solid var(--border);border-radius:9px;font-size:13px;color:var(--navy);font-weight:600;}
+.img-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:9px;margin-bottom:18px;}
+.img-thumb{position:relative;border-radius:9px;overflow:hidden;border:1.5px solid var(--border);aspect-ratio:1;background:#f0f4f8;}
+.img-thumb img{width:100%;height:100%;object-fit:cover;}
+.img-rm{position:absolute;top:3px;right:3px;width:20px;height:20px;background:rgba(192,57,43,0.9);color:white;border:none;border-radius:50%;font-size:11px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.img-num{position:absolute;bottom:3px;left:5px;background:rgba(26,39,68,0.8);color:white;font-size:10px;padding:1px 5px;border-radius:4px;}
+.progress-wrap{display:none;margin-bottom:16px;}
+.progress-wrap.on{display:block;}
+.prog-top{font-size:12px;color:var(--muted);margin-bottom:5px;display:flex;justify-content:space-between;}
+.prog-bar{height:7px;background:var(--border);border-radius:10px;overflow:hidden;}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--navy),var(--gold));border-radius:10px;transition:width 0.4s;width:0%;}
+.err-box{background:#fff5f5;border:1.5px solid #f5c6c6;border-radius:11px;padding:13px 17px;color:var(--red);font-size:13px;display:none;margin-bottom:14px;}
+.btn-generate{width:100%;padding:17px;background:linear-gradient(135deg,var(--navy) 0%,var(--navy2) 100%);color:white;border:2px solid transparent;border-radius:13px;font-family:"Playfair Display",serif;font-size:19px;cursor:pointer;transition:all 0.25s;margin-bottom:30px;}
+.btn-generate:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 10px 30px rgba(30,58,95,0.35);border-color:var(--gold);}
+.btn-generate:disabled{opacity:0.5;cursor:not-allowed;}
+.loader{display:none;text-align:center;padding:42px 20px;}
+.loader.on{display:block;}
+.dots{display:flex;justify-content:center;gap:8px;margin-bottom:14px;}
+.dot{width:12px;height:12px;background:var(--navy);border-radius:50%;animation:bounce 1.2s infinite;}
+.dot:nth-child(2){animation-delay:0.2s;background:var(--gold);}
+.dot:nth-child(3){animation-delay:0.4s;}
+@keyframes bounce{0%,80%,100%{transform:scale(0.6);opacity:0.4;}40%{transform:scale(1);opacity:1;}}
+.loader-txt{color:var(--muted);font-size:15px;}
+.loader-sub{font-size:13px;color:#8899cc;margin-top:5px;}
+#resultsArea{display:none;animation:fadeUp 0.5s ease;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:translateY(0);}}
+.results-hd{background:linear-gradient(135deg,var(--navy),var(--navy2));border-radius:18px;padding:24px 26px;margin-bottom:20px;color:white;}
+.results-hd h2{font-family:"Playfair Display",serif;font-size:21px;color:var(--gold2);margin-bottom:5px;}
+.results-hd p{font-size:13px;color:#aab5d5;margin-bottom:14px;}
+.result-actions{display:flex;gap:8px;flex-wrap:wrap;}
+.btn-gold{padding:10px 20px;background:var(--gold);color:var(--navy);border:none;border-radius:9px;font-family:"DM Sans",sans-serif;font-size:13px;font-weight:600;cursor:pointer;}
+.btn-gold:hover{background:var(--gold2);}
+.btn-ow{padding:10px 20px;background:transparent;color:white;border:1.5px solid rgba(255,255,255,0.3);border-radius:9px;font-family:"DM Sans",sans-serif;font-size:13px;cursor:pointer;}
+.btn-ow:hover{background:rgba(255,255,255,0.1);}
+.result-block{margin-bottom:16px;border:1.5px solid var(--border);border-radius:18px;overflow:hidden;background:white;}
+.sec-head{background:var(--navy);padding:11px 18px;display:flex;align-items:center;gap:8px;}
+.sec-ico{font-size:15px;}
+.sec-ttl{font-family:"Playfair Display",serif;font-size:14px;color:white;}
+.sec-body{padding:18px 20px;font-size:14px;line-height:1.9;color:var(--ink);}
+.sec-body .q{font-weight:700;color:var(--navy);margin-top:10px;display:block;}
+.sec-body .a{color:var(--ink);margin-bottom:5px;display:block;padding-left:12px;}
+.diff-h{display:inline-block;font-size:10px;font-weight:700;padding:2px 7px;border-radius:8px;margin-left:6px;background:#fff0f0;color:#c0392b;border:1px solid #f5c6c6;}
+.diff-m{display:inline-block;font-size:10px;font-weight:700;padding:2px 7px;border-radius:8px;margin-left:6px;background:#fff8e7;color:#c9943a;border:1px solid #f5e0a0;}
+.diff-e{display:inline-block;font-size:10px;font-weight:700;padding:2px 7px;border-radius:8px;margin-left:6px;background:#f0fff4;color:#2d6a4f;border:1px solid #b7e4c7;}
+.save-status{font-size:13px;color:var(--green);text-align:center;padding:8px;display:none;font-weight:500;}
+.history-section{margin-top:42px;}
+.history-section h2{font-family:"Playfair Display",serif;font-size:20px;color:var(--navy);margin-bottom:16px;}
+.history-item{background:white;border:1.5px solid var(--border);border-radius:12px;padding:14px 18px;margin-bottom:9px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;}
+.h-date{font-size:11px;color:var(--muted);}
+.h-title{font-size:14px;font-weight:600;color:var(--ink);}
+.h-count{font-size:12px;color:var(--navy);}
+.btn-hpdf{padding:6px 14px;background:var(--navy-pale);color:var(--navy);border:1px solid var(--border);border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;font-family:"DM Sans",sans-serif;}
+.btn-hpdf:hover{background:var(--navy);color:white;}
+#teacherPage{display:none;}
+.teacher-wrap{max-width:920px;margin:0 auto;padding:34px 22px 80px;}
+.teacher-hd{background:linear-gradient(135deg,var(--navy),var(--navy2));border-radius:18px;padding:26px 28px;margin-bottom:24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;}
+.teacher-hd h1{font-family:"Playfair Display",serif;font-size:24px;color:white;}
+.teacher-hd p{font-size:13px;color:#aab5d5;margin-top:3px;}
+.dash-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:22px;}
+.dash-stat{background:white;border:1.5px solid var(--border);border-radius:13px;padding:16px;text-align:center;}
+.ds-num{font-family:"Playfair Display",serif;font-size:28px;color:var(--navy);}
+.ds-lbl{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-top:3px;}
+.add-student-card{background:white;border:1.5px solid var(--border);border-radius:16px;padding:22px;margin-bottom:20px;}
+.add-student-card h3{font-family:"Playfair Display",serif;font-size:17px;color:var(--navy);margin-bottom:4px;}
+.add-student-card > p{font-size:13px;color:var(--muted);margin-bottom:14px;}
+.add-row{display:flex;gap:8px;flex-wrap:wrap;}
+.add-input{flex:1;min-width:120px;padding:10px 13px;border:1.5px solid var(--border);border-radius:9px;font-family:"DM Sans",sans-serif;font-size:14px;outline:none;}
+.add-input:focus{border-color:var(--navy);}
+.btn-add{padding:10px 20px;background:var(--navy);color:white;border:none;border-radius:9px;font-family:"DM Sans",sans-serif;font-size:14px;font-weight:600;cursor:pointer;white-space:nowrap;}
+.add-msg{font-size:13px;margin-top:9px;padding:8px 13px;border-radius:8px;display:none;}
+.students-card{background:white;border:1.5px solid var(--border);border-radius:16px;overflow:hidden;margin-bottom:20px;}
+.sc-hd{background:var(--navy);padding:13px 18px;display:flex;align-items:center;justify-content:space-between;}
+.sc-hd h3{font-family:"Playfair Display",serif;font-size:15px;color:white;}
+.sc-hd span{font-size:12px;color:#8899cc;}
+.s-row{display:flex;align-items:center;justify-content:space-between;padding:12px 18px;border-bottom:1px solid var(--border);flex-wrap:wrap;gap:8px;}
+.s-row:last-child{border-bottom:none;}
+.s-name{font-weight:600;font-size:14px;}
+.s-id{font-size:12px;color:var(--muted);}
+.badge-on{background:#f0fff4;color:#2d6a4f;border:1px solid #b7e4c7;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:700;}
+.badge-off{background:#fff5f5;color:var(--red);border:1px solid #f5c6c6;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:700;}
+.s-btns{display:flex;gap:6px;}
+.btn-tog{padding:5px 10px;font-size:11px;border-radius:6px;cursor:pointer;border:1px solid var(--border);background:white;font-family:"DM Sans",sans-serif;}
+.btn-del{padding:5px 10px;font-size:11px;border-radius:6px;cursor:pointer;border:1px solid #f5c6c6;background:#fff5f5;color:var(--red);font-family:"DM Sans",sans-serif;}
+.sessions-card{background:white;border:1.5px solid var(--border);border-radius:16px;overflow:hidden;}
+.sessions-hd{background:var(--navy2);padding:13px 18px;}
+.sessions-hd h3{font-family:"Playfair Display",serif;font-size:15px;color:white;}
+.t-login-card{background:white;border:1.5px solid var(--border);border-radius:18px;padding:36px;max-width:420px;margin:0 auto;}
+.t-login-card h2{font-family:"Playfair Display",serif;font-size:22px;color:var(--navy);margin-bottom:6px;}
+.t-login-card p{font-size:13px;color:var(--muted);margin-bottom:20px;}
+footer{background:var(--navy);text-align:center;padding:28px 20px;border-top:2px solid var(--gold);}
+.f-brand{font-family:"Playfair Display",serif;font-size:16px;color:var(--gold2);margin-bottom:3px;}
+.f-tag{font-size:11px;color:#6677aa;letter-spacing:2px;text-transform:uppercase;margin-bottom:12px;}
+.f-divider{width:34px;height:1px;background:rgba(201,148,58,0.35);margin:8px auto;}
+.f-icons{display:flex;gap:22px;justify-content:center;align-items:center;}
+.f-icon-link{display:flex;flex-direction:column;align-items:center;gap:5px;text-decoration:none;}
+.f-circle{width:44px;height:44px;border-radius:50%;border:1.5px solid rgba(255,255,255,0.18);background:rgba(255,255,255,0.06);display:flex;align-items:center;justify-content:center;transition:all 0.25s;}
+.f-icon-link:hover .f-circle.yt{background:rgba(255,107,107,0.18);border-color:rgba(255,107,107,0.65);}
+.f-icon-link:hover .f-circle.wa{background:rgba(107,203,119,0.18);border-color:rgba(107,203,119,0.65);}
+.f-icon-lbl{font-size:10px;color:#6677aa;letter-spacing:2px;text-transform:uppercase;}
+.f-sep{width:1px;height:32px;background:rgba(255,255,255,0.1);}
+@media(max-width:640px){header{padding:10px 14px;}.land-hero{padding:48px 16px 56px;}.features{padding:40px 16px;}.stats-bar{gap:28px;padding:28px 16px;}.container{padding:22px 12px 60px;}.grade-row{flex-direction:column;}.add-row{flex-direction:column;}}
+</style>
+
+</head>
+<body>
+
+<header>
+  <div class="logo-wrap">
+    <img class="logo-img" src="https://raw.githubusercontent.com/lden3268/learning-den-ai/main/DEN_LOGO.png" alt="Learning DEN">
+    <div>
+      <div class="logo-name">Learning <span>DEN</span> AI</div>
+      <div class="logo-sub">Learn &middot; Evolve &middot; Win</div>
+    </div>
+  </div>
+  <div class="header-right">
+    <button class="btn-hdr" onclick="goTeacher()">Teacher Login</button>
+    <div class="user-badge" id="headerBadge"></div>
+  </div>
+</header>
+
+<!-- LANDING -->
+<div id="landingPage">
+  <div class="land-hero">
+    <img class="hero-logo" src="https://raw.githubusercontent.com/lden3268/learning-den-ai/main/DEN_LOGO.png" alt="Learning DEN">
+    <h1>Upload. Learn.<br><em>Ace Your Exams.</em></h1>
+    <p>Upload up to 20 images of your textbook or notes. Our AI reads everything together and generates unified Key Points, Summary, Exam Q&amp;A, Fill in the Blanks and more.</p>
+    <div class="hero-btns">
+      <button class="btn-hero-p" onclick="goApp()">Start Learning Now</button>
+      <button class="btn-hero-s" onclick="goTeacher()">Teacher Login</button>
+    </div>
+  </div>
+  <div class="features">
+    <h2>Everything You Need to Excel</h2>
+    <p class="features-sub">Powered by Claude AI &mdash; the most advanced AI for education</p>
+    <div class="feat-grid">
+      <div class="feat-card"><div class="feat-icon">&#129504;</div><h3>Unified AI Analysis</h3><p>Upload multiple pages and AI reads them all together as one topic &mdash; giving you a complete, connected study set.</p></div>
+      <div class="feat-card"><div class="feat-icon">&#128273;</div><h3>Key Points</h3><p>Every important fact extracted and numbered clearly so nothing is missed for your exam.</p></div>
+      <div class="feat-card"><div class="feat-icon">&#128221;</div><h3>Summary Notes</h3><p>Clear, well-structured notes in simple language &mdash; perfect for last-minute revision.</p></div>
+      <div class="feat-card"><div class="feat-icon">&#10067;</div><h3>Exam Q&amp;A</h3><p>10&ndash;12 exam-style questions with full model answers, tagged Easy / Medium / Hard.</p></div>
+      <div class="feat-card"><div class="feat-icon">&#9999;&#65039;</div><h3>Fill in the Blanks</h3><p>Practice questions to test your memory and reinforce what you have learned.</p></div>
+      <div class="feat-card"><div class="feat-icon">&#128214;</div><h3>Book Questions</h3><p>Textbook exercise questions automatically identified and answered with model responses.</p></div>
+    </div>
+  </div>
+  <div class="stats-bar">
+    <div class="stat-item"><div class="stat-num">20</div><div class="stat-label">Images Per Session</div></div>
+    <div class="stat-item"><div class="stat-num">6</div><div class="stat-label">Study Sections</div></div>
+    <div class="stat-item"><div class="stat-num">14</div><div class="stat-label">Subjects Covered</div></div>
+    <div class="stat-item"><div class="stat-num">100%</div><div class="stat-label">Exam Ready</div></div>
+  </div>
+</div>
+
+<!-- APP PAGE -->
+<div id="appPage">
+  <div style="background:linear-gradient(135deg,#1e3a5f,#2a5080);padding:36px 28px 44px;text-align:center;">
+    <h1 style="font-family:'Playfair Display',serif;font-size:clamp(26px,4vw,44px);color:white;line-height:1.15;margin-bottom:10px;">Upload. Learn. <em style="color:#e8b84b;font-style:italic;">Ace Your Exams.</em></h1>
+    <p style="font-size:14px;color:#aab5d5;max-width:500px;margin:0 auto;">Upload images, pick your grade and subject, and get a complete unified study set.</p>
+  </div>
+  <div class="container">
+
+    <div id="loginBox">
+      <div class="login-card">
+        <img class="login-logo" src="https://raw.githubusercontent.com/lden3268/learning-den-ai/main/DEN_LOGO.png" alt="Learning DEN">
+        <h2>Enter Your Student ID</h2>
+        <p>Your teacher has given you a unique Student ID. Enter it below to access Learning DEN AI.</p>
+        <input class="ifield upper" type="text" id="studentIdInput" placeholder="e.g. LD-001" maxlength="20"
+          onkeydown="if(event.key==='Enter') doLogin()" oninput="this.value=this.value.toUpperCase()">
+        <button class="btn-primary" id="loginBtn" onclick="doLogin()">Enter Learning DEN</button>
+        <div class="login-err" id="loginErr"></div>
+      </div>
+    </div>
+
+    <div id="mainApp" style="display:none;">
+      <div class="student-bar">
+        <div><div class="sb-name" id="sbName"></div><div class="sb-stats" id="sbStats">Sessions: 0 &nbsp;&middot;&nbsp; Images: 0</div></div>
+        <button class="btn-sm" onclick="doLogout()">Change ID</button>
+      </div>
+
+      <div class="api-section">
+        <div class="api-label">Claude API Key</div>
+        <div class="api-row">
+          <input class="api-input" type="password" id="apiKeyInput" placeholder="sk-ant-api03-...">
+          <button class="btn-save" onclick="saveApiKey()">Save</button>
+        </div>
+        <div class="api-status" id="apiStatus">Not set.</div>
+      </div>
+
+      <div class="step-card">
+        <div class="step-label">Grade Level</div>
+        <div class="grade-row">
+          <button class="grade-btn" onclick="pickGrade(this,'grade18')">Grade 1 &ndash; 8</button>
+          <button class="grade-btn" onclick="pickGrade(this,'olevel')">O Level</button>
+        </div>
+        <div class="step-label" style="margin-top:18px;">Sub-Grade</div>
+        <div class="sel-row" id="subGradeRow">
+          <button class="sel-btn" onclick="pickSub(this,'1')">Grade 1</button>
+          <button class="sel-btn" onclick="pickSub(this,'2')">Grade 2</button>
+          <button class="sel-btn" onclick="pickSub(this,'3')">Grade 3</button>
+          <button class="sel-btn" onclick="pickSub(this,'4')">Grade 4</button>
+          <button class="sel-btn" onclick="pickSub(this,'5')">Grade 5</button>
+          <button class="sel-btn" onclick="pickSub(this,'6')">Grade 6</button>
+          <button class="sel-btn" onclick="pickSub(this,'7')">Grade 7</button>
+          <button class="sel-btn" onclick="pickSub(this,'8')">Grade 8</button>
+        </div>
+        <div class="step-label" style="margin-top:18px;">Subject</div>
+        <div class="sel-row" id="subjectRow">
+          <button class="sel-btn" onclick="pickSubject(this,'Science')">Science</button>
+          <button class="sel-btn" onclick="pickSubject(this,'Biology')">Biology</button>
+          <button class="sel-btn" onclick="pickSubject(this,'Chemistry')">Chemistry</button>
+          <button class="sel-btn" onclick="pickSubject(this,'Physics')">Physics</button>
+          <button class="sel-btn" onclick="pickSubject(this,'Maths')">Maths</button>
+          <button class="sel-btn" onclick="pickSubject(this,'English')">English</button>
+          <button class="sel-btn" onclick="pickSubject(this,'Urdu')">Urdu</button>
+          <button class="sel-btn" onclick="pickSubject(this,'Islamiyat')">Islamiyat</button>
+          <button class="sel-btn" onclick="pickSubject(this,'Pak Studies')">Pak Studies</button>
+          <button class="sel-btn" onclick="pickSubject(this,'History')">History</button>
+          <button class="sel-btn" onclick="pickSubject(this,'Geography')">Geography</button>
+          <button class="sel-btn" onclick="pickSubject(this,'Computer')">Computer</button>
+          <button class="sel-btn" onclick="pickSubject(this,'Accounts')">Accounts</button>
+          <button class="sel-btn" onclick="pickSubject(this,'Economics')">Economics</button>
+        </div>
+        <input class="chapter-input" type="text" id="chapterInput" placeholder="Chapter / Topic (optional)">
+      </div>
+
+      <div class="step-card" style="padding:0;overflow:hidden;">
+        <div class="upload-zone" id="uploadZone"
+          ondragover="event.preventDefault();this.classList.add('drag')"
+          ondragleave="this.classList.remove('drag')"
+          ondrop="onDrop(event)">
+          <input type="file" id="fileInput" accept="image/*" multiple onchange="onFiles(this.files)">
+          <div class="upload-icon">&#128444;</div>
+          <h3>Drop images here or tap to browse</h3>
+          <p>Photos of textbook pages, notes, worksheets</p>
+          <span class="badge-gold">Max 20 images</span>
+        </div>
+        <div style="padding:0 16px 16px;">
+          <div class="img-counter" id="imgCounter">
+            <span id="counterText">0 images</span>
+            <button class="btn-sm" onclick="clearImages()">Remove All</button>
+          </div>
+          <div class="img-grid" id="imgGrid"></div>
+        </div>
+      </div>
+
+      <div class="err-box" id="errBox"></div>
+      <div class="progress-wrap" id="progressWrap">
+        <div class="prog-top"><span id="progText">Processing...</span><span id="progPct">0%</span></div>
+        <div class="prog-bar"><div class="prog-fill" id="progFill"></div></div>
+      </div>
+      <button class="btn-generate" id="generateBtn" onclick="doGenerate()" disabled>
+        &#10024; &nbsp;<span id="genLabel">Generate Study Material</span>
+      </button>
+      <div class="loader" id="loader">
+        <div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+        <div class="loader-txt" id="loaderTxt">Reading your images...</div>
+        <div class="loader-sub">Please wait &mdash; this may take a minute</div>
+      </div>
+      <div class="save-status" id="saveStatus">&#10003; Saved to your account!</div>
+      <div id="resultsArea"></div>
+      <div class="history-section" id="histSection" style="display:none;">
+        <h2>Previous Sessions</h2>
+        <div id="histList"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TEACHER PAGE -->
+<div id="teacherPage">
+  <div style="background:linear-gradient(135deg,#1e3a5f,#2a5080);padding:36px 28px 44px;text-align:center;">
+    <h1 style="font-family:'Playfair Display',serif;font-size:32px;color:white;">Teacher <em style="color:#e8b84b;font-style:italic;">Dashboard</em></h1>
+  </div>
+  <div class="teacher-wrap">
+    <div id="tLoginBox">
+      <div class="t-login-card">
+        <h2>Teacher Login</h2>
+        <p>Enter your teacher password to manage students.</p>
+        <input class="ifield" type="password" id="tPwInput" placeholder="Password"
+          onkeydown="if(event.key==='Enter') doTeacherLogin()">
+        <button class="btn-primary" onclick="doTeacherLogin()">Login</button>
+        <div class="login-err" id="tLoginErr">Incorrect password.</div>
+        <div style="margin-top:14px;"><button class="btn-sm" onclick="goApp()">&#8592; Back to Student App</button></div>
+      </div>
+    </div>
+    <div id="tDashboard" style="display:none;">
+      <div class="teacher-hd">
+        <div><h1>Teacher Dashboard</h1><p>Learning DEN AI &nbsp;&middot;&nbsp; Manage Students</p></div>
+        <button class="btn-sm" style="color:white;border-color:rgba(255,255,255,0.3);" onclick="goApp()">&#8592; Exit</button>
+      </div>
+      <div class="dash-stats" id="dashStats"></div>
+      <div class="add-student-card">
+        <h3>&#10133; Add Approved Student</h3>
+        <p>Only students you add here can log in to the app.</p>
+        <div class="add-row">
+          <input class="add-input" type="text" id="newId" placeholder="Student ID e.g. LD-005" maxlength="20" oninput="this.value=this.value.toUpperCase()">
+          <input class="add-input" type="text" id="newName" placeholder="Full Name e.g. Ahmed Ali" maxlength="50">
+          <input class="add-input" type="text" id="newClass" placeholder="Class e.g. 7A" maxlength="20">
+          <button class="btn-add" onclick="addStudent()">Add</button>
+        </div>
+        <div class="add-msg" id="addMsg"></div>
+      </div>
+      <div class="students-card">
+        <div class="sc-hd"><h3>Approved Students</h3><span id="approvedCount"></span></div>
+        <div id="approvedList"><div style="padding:14px 18px;color:var(--muted);font-size:14px;">Loading...</div></div>
+      </div>
+      <div class="sessions-card">
+        <div class="sessions-hd"><h3>Session Activity</h3></div>
+        <div id="sessionsList"><div style="padding:14px 18px;color:var(--muted);font-size:14px;">Loading...</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <div class="f-brand">Learning DEN AI</div>
+  <div class="f-tag">Learn &middot; Evolve &middot; Win &middot; Est. 2011</div>
+  <div class="f-divider"></div>
+  <div class="f-icons">
+    <a class="f-icon-link" href="https://www.youtube.com/@learning_den" target="_blank">
+      <div class="f-circle yt">
+        <svg width="17" height="12" viewBox="0 0 20 14" fill="#ff6b6b"><path d="M19.6 2.2a2.5 2.5 0 0 0-1.8-1.8C16.3 0 10 0 10 0S3.7 0 2.2.4A2.5 2.5 0 0 0 .4 2.2C0 3.7 0 7 0 7s0 3.3.4 4.8a2.5 2.5 0 0 0 1.8 1.8C3.7 14 10 14 10 14s6.3 0 7.8-.4a2.5 2.5 0 0 0 1.8-1.8C20 10.3 20 7 20 7s0-3.3-.4-4.8zM8 10V4l5.2 3L8 10z"/></svg>
+      </div>
+      <span class="f-icon-lbl">YouTube</span>
+    </a>
+    <div class="f-sep"></div>
+    <a class="f-icon-link" href="https://wa.me/923363954346" target="_blank">
+      <div class="f-circle wa">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="#6bcb77"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/></svg>
+      </div>
+      <span class="f-icon-lbl">WhatsApp</span>
+    </a>
+  </div>
+</footer>
+
+<script>
+var TEACHER_PASS = "danu3268";
+var FB_CONFIG = {
+  apiKey: "AIzaSyDytjcwUq254YpUgibkECT1K3cYeJ42t2k",
+  authDomain: "learning-den-ai.firebaseapp.com",
+  projectId: "learning-den-ai",
+  storageBucket: "learning-den-ai.firebasestorage.app",
+  messagingSenderId: "1039011922735",
+  appId: "1:1039011922735:web:f7aa615561e8ac8ea497da"
+};
+var db = null, fbReady = false;
+var studentId = "", studentName = "";
+var selGrade = "", selSub = "", selSubject = "";
+var uploadedImages = [], apiKey = "";
+var allResultData = [], sessionHistory = [];
+
+function lsGet(k){ try{ return JSON.parse(localStorage.getItem(k)); }catch(e){ return null; } }
+function lsSet(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); }catch(e){} }
+
+function loadScript(src){
+  return new Promise(function(res,rej){
+    var s = document.createElement("script");
+    s.src = src; s.onload = res; s.onerror = rej;
+    document.head.appendChild(s);
+  });
+}
+
+async function initFirebase(){
+  try{
+    await loadScript("https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js");
+    await loadScript("https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js");
+    firebase.initializeApp(FB_CONFIG);
+    db = firebase.firestore();
+    fbReady = true;
+  }catch(e){ fbReady = false; }
+}
+
+function goApp(){
+  document.getElementById("landingPage").style.display = "none";
+  document.getElementById("appPage").style.display = "block";
+  document.getElementById("teacherPage").style.display = "none";
+  if(studentId){
+    document.getElementById("loginBox").style.display = "none";
+    document.getElementById("mainApp").style.display = "block";
+  } else {
+    document.getElementById("loginBox").style.display = "block";
+    document.getElementById("mainApp").style.display = "none";
+  }
+}
+function showMainApp(){
+  document.getElementById("landingPage").style.display = "none";
+  document.getElementById("appPage").style.display = "block";
+  document.getElementById("teacherPage").style.display = "none";
+}
+function goTeacher(){
+  document.getElementById("landingPage").style.display = "none";
+  document.getElementById("appPage").style.display = "none";
+  document.getElementById("teacherPage").style.display = "block";
+  document.getElementById("tLoginBox").style.display = "block";
+  document.getElementById("tDashboard").style.display = "none";
+}
+
+async function doLogin(){
+  var val = document.getElementById("studentIdInput").value.trim().toUpperCase();
+  var errEl = document.getElementById("loginErr");
+  var btn = document.getElementById("loginBtn");
+  errEl.style.display = "none";
+  if(!val || val.length < 2){
+    errEl.textContent = "Please enter your Student ID.";
+    errEl.style.display = "block"; return;
+  }
+  btn.textContent = "Verifying..."; btn.disabled = true;
+  try{
+    if(fbReady && db){
+      var snap = await db.collection("approvedStudents").doc(val).get();
+      if(!snap.exists){
+        errEl.textContent = "ID not approved. Please contact your teacher.";
+        errEl.style.display = "block";
+        btn.textContent = "Enter Learning DEN"; btn.disabled = false; return;
+      }
+      var data = snap.data();
+      if(data.active === false){
+        errEl.textContent = "Account deactivated. Please contact your teacher.";
+        errEl.style.display = "block";
+        btn.textContent = "Enter Learning DEN"; btn.disabled = false; return;
+      }
+      studentId = val; studentName = data.name || val;
+    } else {
+      errEl.textContent = "Cannot connect to server. Check your internet.";
+      errEl.style.display = "block";
+      btn.textContent = "Enter Learning DEN"; btn.disabled = false; return;
+    }
+  }catch(e){
+    errEl.textContent = "Error: " + e.message;
+    errEl.style.display = "block";
+    btn.textContent = "Enter Learning DEN"; btn.disabled = false; return;
+  }
+  lsSet("ld_sid", studentId); lsSet("ld_sname", studentName);
+  btn.textContent = "Enter Learning DEN"; btn.disabled = false;
+  startApp();
+}
+
+function doLogout(){
+  studentId = ""; studentName = "";
+  lsSet("ld_sid", null); lsSet("ld_sname", null);
+  document.getElementById("loginBox").style.display = "block";
+  document.getElementById("mainApp").style.display = "none";
+  document.getElementById("headerBadge").style.display = "none";
+  document.getElementById("studentIdInput").value = "";
+  document.getElementById("resultsArea").innerHTML = "";
+  document.getElementById("resultsArea").style.display = "none";
+  uploadedImages = []; renderGrid();
+  goApp();
+}
+
+async function startApp(){
+  document.getElementById("loginBox").style.display = "none";
+  document.getElementById("mainApp").style.display = "block";
+  document.getElementById("sbName").textContent = studentName + " (" + studentId + ")";
+  document.getElementById("headerBadge").textContent = studentId;
+  document.getElementById("headerBadge").style.display = "block";
+  apiKey = lsGet("ld_apikey") || "";
+  if(apiKey){
+    document.getElementById("apiKeyInput").value = apiKey;
+    document.getElementById("apiStatus").textContent = "API key loaded.";
+    document.getElementById("apiStatus").className = "api-status ok";
+  }
+  showMainApp();
+  await loadStats(); await loadHistory(); checkReady();
+}
+
+function saveApiKey(){
+  var k = document.getElementById("apiKeyInput").value.trim();
+  if(!k.startsWith("sk-ant")){
+    document.getElementById("apiStatus").textContent = "Invalid. Should start with sk-ant...";
+    document.getElementById("apiStatus").className = "api-status err"; return;
+  }
+  apiKey = k; lsSet("ld_apikey", k);
+  document.getElementById("apiStatus").textContent = "API key saved!";
+  document.getElementById("apiStatus").className = "api-status ok";
+  checkReady();
+}
+
+function pickGrade(btn, val){
+  document.querySelectorAll(".grade-btn").forEach(function(b){ b.classList.remove("active"); });
+  btn.classList.add("active"); selGrade = val;
+  var sr = document.getElementById("subGradeRow");
+  sr.style.display = (val === "grade18") ? "flex" : "none";
+  if(val === "olevel") selSub = "olevel";
+  checkReady();
+}
+function pickSub(btn, val){
+  document.querySelectorAll("#subGradeRow .sel-btn").forEach(function(b){ b.classList.remove("active"); });
+  btn.classList.add("active"); selSub = val; checkReady();
+}
+function pickSubject(btn, val){
+  document.querySelectorAll("#subjectRow .sel-btn").forEach(function(b){ b.classList.remove("active"); });
+  btn.classList.add("active"); selSubject = val; checkReady();
+}
+
+function onDrop(e){
+  e.preventDefault();
+  document.getElementById("uploadZone").classList.remove("drag");
+  addFiles(e.dataTransfer.files);
+}
+function onFiles(files){ addFiles(files); document.getElementById("fileInput").value = ""; }
+function addFiles(files){
+  var rem = 20 - uploadedImages.length;
+  if(rem <= 0){ showErr("Maximum 20 images already selected."); return; }
+  var arr = Array.from(files).filter(function(f){ return f.type.startsWith("image/"); }).slice(0,rem);
+  if(!arr.length) return;
+  var loaded = 0;
+  arr.forEach(function(f){
+    var r = new FileReader();
+    r.onload = function(ev){
+      uploadedImages.push({ name:f.name, src:ev.target.result, base64:ev.target.result.split(",")[1], mime:f.type||"image/jpeg" });
+      if(++loaded === arr.length){ renderGrid(); checkReady(); }
+    };
+    r.readAsDataURL(f);
+  });
+}
+function removeImg(i){ uploadedImages.splice(i,1); renderGrid(); checkReady(); }
+function clearImages(){
+  uploadedImages = []; renderGrid(); checkReady();
+  document.getElementById("resultsArea").innerHTML = "";
+  document.getElementById("resultsArea").style.display = "none";
+}
+function renderGrid(){
+  var grid = document.getElementById("imgGrid");
+  var ctr = document.getElementById("imgCounter");
+  grid.innerHTML = "";
+  if(!uploadedImages.length){
+    ctr.style.display = "none";
+    document.getElementById("genLabel").textContent = "Generate Study Material"; return;
+  }
+  ctr.style.display = "flex";
+  document.getElementById("counterText").textContent = uploadedImages.length + " image(s) selected";
+  document.getElementById("genLabel").textContent = "Generate Material for " + uploadedImages.length + " Image(s)";
+  uploadedImages.forEach(function(img,i){
+    var d = document.createElement("div"); d.className = "img-thumb";
+    var btn = document.createElement("button"); btn.className = "img-rm"; btn.innerHTML = "&#215;";
+    btn.onclick = function(){ removeImg(i); };
+    var im = document.createElement("img"); im.src = img.src;
+    var num = document.createElement("span"); num.className = "img-num"; num.textContent = i+1;
+    d.appendChild(im); d.appendChild(btn); d.appendChild(num);
+    grid.appendChild(d);
+  });
+}
+
+function checkReady(){
+  var gradeOk = (selGrade === "olevel") || (selGrade === "grade18" && selSub);
+  var ok = apiKey && uploadedImages.length > 0 && studentId && gradeOk && selSubject;
+  document.getElementById("generateBtn").disabled = !ok;
+}
+function showErr(msg){
+  var b = document.getElementById("errBox");
+  b.textContent = msg; b.style.display = "block";
+  setTimeout(function(){ b.style.display = "none"; }, 6000);
+}
+function setProg(pct, msg){
+  document.getElementById("progText").textContent = msg || "";
+  document.getElementById("progPct").textContent = pct + "%";
+  document.getElementById("progFill").style.width = pct + "%";
+  document.getElementById("loaderTxt").textContent = msg || "";
+}
+
+async function doGenerate(){
+  if(!apiKey || !uploadedImages.length || !studentId) return;
+  var ra = document.getElementById("resultsArea");
+  ra.innerHTML = ""; ra.style.display = "none";
+  document.getElementById("loader").classList.add("on");
+  document.getElementById("generateBtn").disabled = true;
+  document.getElementById("errBox").style.display = "none";
+  document.getElementById("progressWrap").classList.add("on");
+  document.getElementById("saveStatus").style.display = "none";
+  allResultData = [];
+  var total = uploadedImages.length;
+  var chapter = document.getElementById("chapterInput").value.trim();
+  try{
+    var rawTexts = [];
+    for(var i = 0; i < total; i++){
+      setProg(Math.round(((i+1)/total)*50), "Reading image " + (i+1) + " of " + total + "...");
+      rawTexts.push(await readOneImage(uploadedImages[i], i+1, total));
+    }
+    setProg(65, "Analysing all " + total + " image(s) together...");
+    var unified = await generateUnified(rawTexts, chapter);
+    setProg(90, "Preparing your study material...");
+    var parsed = parseResult(unified);
+    allResultData = [parsed];
+    var dateStr = new Date().toLocaleString("en-PK",{timeZone:"Asia/Karachi"});
+    var gradeLabel = selGrade === "olevel" ? "O Level" : "Grade " + selSub;
+    var hd = document.createElement("div"); hd.className = "results-hd";
+    hd.innerHTML = "<h2>Study Material Ready &#10024;</h2>" +
+      "<p>" + studentName + " &nbsp;&middot;&nbsp; " + gradeLabel + " &nbsp;&middot;&nbsp; " + selSubject +
+      (chapter ? " &nbsp;&middot;&nbsp; " + chapter : "") + " &nbsp;&middot;&nbsp; " + total + " image(s) &nbsp;&middot;&nbsp; " + dateStr + "</p>" +
+      "<div class=\"result-actions\">" +
+      "<button class=\"btn-gold\" onclick=\"doPDF()\">&#8595; Download PDF</button>" +
+      "<button class=\"btn-ow\" onclick=\"doCopy(this)\">Copy All</button>" +
+      "</div>";
+    var blk = document.createElement("div"); blk.className = "result-block";
+    blk.innerHTML = renderSections(parsed);
+    ra.appendChild(hd); ra.appendChild(blk);
+    ra.style.display = "block";
+    ra.scrollIntoView({behavior:"smooth",block:"start"});
+    setProg(100, "Done!");
+    await saveSession(parsed, total, chapter);
+  }catch(e){ showErr("Error: " + e.message); }
+  document.getElementById("loader").classList.remove("on");
+  document.getElementById("progressWrap").classList.remove("on");
+  document.getElementById("generateBtn").disabled = false;
+  checkReady();
+}
+
+async function readOneImage(img, idx, total){
+  var prompt = "You are reading image " + idx + " of " + total + " for a student. Extract ALL visible text, headings, questions and content completely. Mark textbook exercise questions with [BOOKQ] before each. Output raw content only.";
+  var res = await fetch("https://api.anthropic.com/v1/messages",{
+    method:"POST",
+    headers:{"Content-Type":"application/json","x-api-key":apiKey,"anthropic-version":"2023-06-01","anthropic-dangerous-client-side-allow-cors":"true"},
+    body:JSON.stringify({model:"claude-haiku-4-5-20251001",max_tokens:1500,messages:[{role:"user",content:[
+      {type:"image",source:{type:"base64",media_type:img.mime,data:img.base64}},
+      {type:"text",text:prompt}
+    ]}]})
+  });
+  var data = await res.json();
+  if(!res.ok) throw new Error(data.error ? data.error.message : "API error on image " + idx);
+  return data.content[0].text;
+}
+
+async function generateUnified(rawTexts, chapter){
+  var gradeLabel = selGrade === "olevel" ? "O Level" : "Grade " + selSub;
+  var combined = rawTexts.map(function(t,i){ return "=== IMAGE " + (i+1) + " ===\n" + t; }).join("\n\n");
+  var chCtx = chapter ? "Topic: \"" + chapter + "\"" : "";
+  var prompt = "You are an expert teacher at Learning DEN academy.\nSubject: " + selSubject + ". Grade: " + gradeLabel + ". " + chCtx + "\n\nA student uploaded " + rawTexts.length + " image(s). All extracted content:\n\n" + combined + "\n\nTreat ALL content as ONE unified topic. Generate a complete study set. Use PLAIN TEXT only, no asterisks, no markdown.\n\n---KEY POINTS---\nList all key facts numbered.\n\n---SUMMARY NOTES---\nClear well-structured summary.\n\n---EXAM Q&A---\nQ1: [question] [EASY/MEDIUM/HARD]\nA1: [full answer]\nWrite 10-12 questions.\n\n---FILL IN THE BLANKS---\n1. _________ is _________. (Answer: ...)\nWrite 10 questions.\n\n---ADDITIONAL NOTES---\nKey definitions, dates, formulas, memory tips.\n\n---BOOK QUESTIONS---\nOnly questions from images marked [BOOKQ]. Write BQ1: [question] then BA1: [answer]. If none write: None found.";
+  var res = await fetch("https://api.anthropic.com/v1/messages",{
+    method:"POST",
+    headers:{"Content-Type":"application/json","x-api-key":apiKey,"anthropic-version":"2023-06-01","anthropic-dangerous-client-side-allow-cors":"true"},
+    body:JSON.stringify({model:"claude-sonnet-4-6",max_tokens:3500,messages:[{role:"user",content:[{type:"text",text:prompt}]}]})
+  });
+  var data = await res.json();
+  if(!res.ok) throw new Error(data.error ? data.error.message : "API error on generation");
+  return data.content[0].text;
+}
+
+function parseResult(text){
+  function get(from, to){
+    var esc = function(s){ return s.replace(/[-\/\\^$*+?.()|[\]{}]/g,"\\$&"); };
+    var rx = new RegExp(esc(from) + "([\\s\\S]*?)(?=" + esc(to) + "|$)","i");
+    var m = text.match(rx);
+    return m ? m[1].trim() : "";
+  }
+  return {
+    keypoints:  get("---KEY POINTS---",        "---SUMMARY NOTES---"),
+    summary:    get("---SUMMARY NOTES---",      "---EXAM Q&A---"),
+    qanda:      get("---EXAM Q&A---",           "---FILL IN THE BLANKS---"),
+    fillblanks: get("---FILL IN THE BLANKS---", "---ADDITIONAL NOTES---"),
+    additional: get("---ADDITIONAL NOTES---",   "---BOOK QUESTIONS---"),
+    bookqs: (function(){ var m=text.match(/---BOOK QUESTIONS---([\s\S]*)$/i); return m?m[1].trim():""; })()
+  };
+}
+
+function clean(t){ return (t||"").replace(/\*\*\*/g,"").replace(/\*\*/g,"").replace(/\*/g,"").trim(); }
+function esc(s){ return (s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+
+function renderSections(p){
+  var html = "";
+  function sec(icon, title, content){
+    var c = clean(content); if(!c) return "";
+    var lines = c.split("\n").map(function(line){
+      line = line.trim(); if(!line) return "";
+      var d = esc(line)
+        .replace(/\[HARD\]/gi,"<span class=\"diff-h\">HARD</span>")
+        .replace(/\[MEDIUM\]/gi,"<span class=\"diff-m\">MED</span>")
+        .replace(/\[EASY\]/gi,"<span class=\"diff-e\">EASY</span>");
+      if(/^(Q[0-9]+:|BQ[0-9]+:)/i.test(line)) return "<span class=\"q\">" + d + "</span>";
+      if(/^(A[0-9]+:|BA[0-9]+:)/i.test(line)) return "<span class=\"a\">" + d + "</span>";
+      return d;
+    }).join("\n");
+    return "<div class=\"sec-head\"><span class=\"sec-ico\">" + icon + "</span><span class=\"sec-ttl\">" + title + "</span></div><div class=\"sec-body\">" + lines + "</div>";
+  }
+  html += sec("&#128273;","Key Points", p.keypoints);
+  html += sec("&#128221;","Summary Notes", p.summary);
+  html += sec("&#10067;","Exam Q&A", p.qanda);
+  html += sec("&#9999;&#65039;","Fill in the Blanks", p.fillblanks);
+  html += sec("&#128218;","Additional Notes", p.additional);
+  var bq = clean(p.bookqs);
+  if(bq && !/^none found/i.test(bq)) html += sec("&#128214;","Book Questions", p.bookqs);
+  return html;
+}
+
+function doCopy(btn){
+  if(!allResultData.length) return;
+  var d = allResultData[0];
+  var parts = ["KEY POINTS\n\n"+d.keypoints,"SUMMARY NOTES\n\n"+d.summary,"EXAM Q&A\n\n"+d.qanda,"FILL IN THE BLANKS\n\n"+d.fillblanks,"ADDITIONAL NOTES\n\n"+d.additional];
+  if(d.bookqs && !/^none found/i.test(d.bookqs)) parts.push("BOOK QUESTIONS\n\n"+d.bookqs);
+  var txt = parts.filter(function(s){ return s.length > 20; }).join("\n\n" + "=".repeat(40) + "\n\n");
+  navigator.clipboard.writeText(txt).then(function(){
+    btn.textContent = "Copied!";
+    setTimeout(function(){ btn.textContent = "Copy All"; }, 2000);
+  });
+}
+
+function doPDF(){
+  if(!allResultData.length) return;
+  var d = allResultData[0];
+  var dateStr = new Date().toLocaleString("en-PK",{timeZone:"Asia/Karachi"});
+  var gradeLabel = selGrade === "olevel" ? "O Level" : "Grade " + selSub;
+  var chapter = document.getElementById("chapterInput").value.trim();
+  buildPDF(d, studentName, studentId, gradeLabel, selSubject, chapter, dateStr);
+}
+
+function buildPDF(data, sName, sId, grade, subject, chapter, dateStr){
+  var jsPDF = window.jspdf.jsPDF;
+  var pdf = new jsPDF({orientation:"portrait",unit:"mm",format:"a4"});
+  var PW=210,PH=297,M=15,W=180;
+  var SKY=[202,235,252],GOLD=[190,140,50],NAVY=[30,58,95],INK=[26,32,48],WH=[255,255,255],LGRAY=[246,248,250],DTEXT=[40,60,90];
+  var HEADER_H=24,FOOTER_Y=283;
+  function setC(a){ pdf.setTextColor(a[0],a[1],a[2]); }
+  function strip(t){ return (t||"").replace(/\*\*\*/g,"").replace(/\*\*/g,"").replace(/\*/g,"").trim(); }
+  function drawPage(pageNum,total){
+    pdf.setFillColor(SKY[0],SKY[1],SKY[2]); pdf.rect(0,0,PW,HEADER_H,"F");
+    pdf.setFillColor(GOLD[0],GOLD[1],GOLD[2]); pdf.rect(0,HEADER_H,PW,2,"F");
+    pdf.setFillColor(LGRAY[0],LGRAY[1],LGRAY[2]); pdf.rect(0,HEADER_H+2,PW,PH-(HEADER_H+2),"F");
+    pdf.setFont("helvetica","bold"); pdf.setFontSize(14); setC(NAVY);
+    pdf.text("Learning DEN AI", M, 16);
+    pdf.setFont("helvetica","normal"); pdf.setFontSize(7); setC(DTEXT);
+    var nd = (sName && sName!==sId) ? sName + " (" + sId + ")" : sId;
+    pdf.text(nd, PW-M, 8, {align:"right"});
+    pdf.text(grade + "  |  " + subject, PW-M, 14, {align:"right"});
+    if(chapter) pdf.text(chapter, PW-M, 20, {align:"right"});
+    pdf.setFillColor(SKY[0],SKY[1],SKY[2]); pdf.rect(0,FOOTER_Y,PW,PH-FOOTER_Y,"F");
+    pdf.setFillColor(NAVY[0],NAVY[1],NAVY[2]); pdf.rect(0,FOOTER_Y,PW,0.5,"F");
+    pdf.setFontSize(7); setC(DTEXT);
+    pdf.text("Learning DEN AI  |  Confidential Student Material", M, FOOTER_Y+6);
+    pdf.text("Page " + pageNum + " / " + total, PW-M, FOOTER_Y+6, {align:"right"});
+  }
+  var y = HEADER_H + 9;
+  function newPage(){ pdf.addPage(); y = HEADER_H + 9; }
+  function need(h){ if(y+h > FOOTER_Y-4) newPage(); }
+  function writeLine(text, fs, style, color, indent){
+    indent = indent||0;
+    pdf.setFont("helvetica",style); pdf.setFontSize(fs); setC(color);
+    var wrapped = pdf.splitTextToSize(text, W-indent-4);
+    wrapped.forEach(function(wl){ need(fs*0.44); pdf.text(wl,M+4+indent,y); y+=fs*0.44; });
+    y += 0.8;
+  }
+  function section(title, rawContent){
+    var c = strip(rawContent||""); if(!c) return;
+    newPage();
+    pdf.setFillColor(NAVY[0],NAVY[1],NAVY[2]); pdf.rect(M,y,W,11,"F");
+    pdf.setFont("helvetica","bold"); pdf.setFontSize(10); setC(WH);
+    pdf.text(title, M+5, y+7.8); y += 16;
+    c.split("\n").forEach(function(ln){
+      ln = ln.trim(); if(!ln){ y+=2; return; }
+      var d = ln.replace(/\[EASY\]/gi," [Easy]").replace(/\[MEDIUM\]/gi," [Med]").replace(/\[HARD\]/gi," [Hard]");
+      if(/^(Q[0-9]+:|BQ[0-9]+:)/i.test(ln)){ y+=2; writeLine(d,10,"bold",INK,0); }
+      else if(/^(A[0-9]+:|BA[0-9]+:)/i.test(ln)){ writeLine(d,10,"normal",INK,6); y+=1; }
+      else{ writeLine(d,10,"normal",INK,0); }
+    });
+  }
+  drawPage(1,1);
+  section("KEY POINTS", data.keypoints);
+  section("SUMMARY NOTES", data.summary);
+  section("EXAM Q & A", data.qanda);
+  section("FILL IN THE BLANKS", data.fillblanks);
+  section("ADDITIONAL NOTES", data.additional);
+  var bq = strip(data.bookqs||"");
+  if(bq && !/^none found/i.test(bq)) section("BOOK QUESTIONS", data.bookqs);
+  var total = pdf.getNumberOfPages();
+  for(var p=1;p<=total;p++){ pdf.setPage(p); drawPage(p,total); }
+  pdf.save("LearningDEN_" + sId + "_" + Date.now() + ".pdf");
+}
+
+async function saveSession(parsed, imageCount, chapter){
+  var sd = { createdAt:new Date().toISOString(), grade:selGrade, sub:selSub, subject:selSubject, chapter:chapter||"", imageCount:imageCount, keypoints:parsed.keypoints, summary:parsed.summary, qanda:parsed.qanda, fillblanks:parsed.fillblanks, additional:parsed.additional, bookqs:parsed.bookqs };
+  if(fbReady && db){
+    try{
+      await db.collection("students").doc(studentId).collection("sessions").add(sd);
+      await db.collection("students").doc(studentId).set({studentId:studentId,name:studentName,totalSessions:firebase.firestore.FieldValue.increment(1),totalImages:firebase.firestore.FieldValue.increment(imageCount)},{merge:true});
+    }catch(e){}
+  }
+  var hist = lsGet("ld_hist_"+studentId)||[];
+  hist.unshift(sd); lsSet("ld_hist_"+studentId,hist.slice(0,20));
+  var stats = lsGet("ld_stats_"+studentId)||{sessions:0,images:0};
+  stats.sessions++; stats.images+=imageCount; lsSet("ld_stats_"+studentId,stats);
+  document.getElementById("saveStatus").style.display = "block";
+  setTimeout(function(){ document.getElementById("saveStatus").style.display="none"; },3000);
+  await loadStats(); await loadHistory();
+}
+async function loadStats(){
+  var s = {sessions:0,images:0};
+  if(fbReady && db){
+    try{ var snap=await db.collection("students").doc(studentId).get(); if(snap.exists){ var d=snap.data(); s={sessions:d.totalSessions||0,images:d.totalImages||0}; } }catch(e){}
+  } else { var ls=lsGet("ld_stats_"+studentId); if(ls) s=ls; }
+  document.getElementById("sbStats").textContent = "Sessions: " + s.sessions + "  \u00b7  Images: " + s.images;
+}
+async function loadHistory(){
+  sessionHistory = [];
+  if(fbReady && db){
+    try{
+      var snap=await db.collection("students").doc(studentId).collection("sessions").orderBy("createdAt","desc").limit(10).get();
+      if(!snap.empty) snap.forEach(function(d){ sessionHistory.push(Object.assign({id:d.id},d.data())); });
+    }catch(e){}
+  }
+  if(!sessionHistory.length) sessionHistory = lsGet("ld_hist_"+studentId)||[];
+  if(!sessionHistory.length) return;
+  document.getElementById("histSection").style.display = "block";
+  var list = document.getElementById("histList"); list.innerHTML = "";
+  sessionHistory.forEach(function(d,i){
+    var dt = new Date(d.createdAt).toLocaleString("en-PK",{timeZone:"Asia/Karachi"});
+    var gl = d.grade==="olevel" ? "O Level" : "Grade " + (d.sub||d.grade||"");
+    var el = document.createElement("div"); el.className = "history-item";
+    var pdfBtn = document.createElement("button"); pdfBtn.className = "btn-hpdf"; pdfBtn.textContent = "PDF";
+    pdfBtn.onclick = function(){ histPDF(i); };
+    el.innerHTML = "<div><div class=\"h-date\">"+dt+"</div><div class=\"h-title\">"+(d.subject||"Study")+(d.chapter?" \u2014 "+d.chapter:"")+"</div><div class=\"h-count\">"+gl+" \u00b7 "+(d.imageCount||0)+" image(s)</div></div>";
+    el.appendChild(pdfBtn);
+    list.appendChild(el);
+  });
+}
+function histPDF(i){
+  var d = sessionHistory[i]; if(!d) return;
+  var dt = new Date(d.createdAt).toLocaleString("en-PK",{timeZone:"Asia/Karachi"});
+  var gl = d.grade==="olevel" ? "O Level" : "Grade " + (d.sub||d.grade||"");
+  buildPDF(d, studentName, studentId, gl, d.subject||"", d.chapter||"", dt);
+}
+
+function doTeacherLogin(){
+  var pw = document.getElementById("tPwInput").value;
+  if(pw !== TEACHER_PASS){ document.getElementById("tLoginErr").style.display="block"; return; }
+  document.getElementById("tLoginErr").style.display = "none";
+  document.getElementById("tLoginBox").style.display = "none";
+  document.getElementById("tDashboard").style.display = "block";
+  loadTeacherDashboard();
+}
+async function loadTeacherDashboard(){
+  await loadApprovedStudents();
+  if(!fbReady||!db){ document.getElementById("sessionsList").innerHTML="<div style=\"padding:14px;color:var(--muted)\">Firebase not connected.</div>"; return; }
+  try{
+    var snap = await db.collection("students").get();
+    var tot=0,totImg=0,rows=[];
+    for(var i=0;i<snap.docs.length;i++){
+      var doc=snap.docs[i],d=doc.data(); tot++; totImg+=(d.totalImages||0);
+      var ss=await db.collection("students").doc(doc.id).collection("sessions").orderBy("createdAt","desc").limit(3).get();
+      ss.forEach(function(s){ rows.push(Object.assign({sid:doc.id,sname:d.name||doc.id},s.data())); });
+    }
+    document.getElementById("dashStats").innerHTML =
+      "<div class=\"dash-stat\"><div class=\"ds-num\">"+tot+"</div><div class=\"ds-lbl\">Students</div></div>" +
+      "<div class=\"dash-stat\"><div class=\"ds-num\">"+totImg+"</div><div class=\"ds-lbl\">Images Processed</div></div>";
+    rows.sort(function(a,b){ return new Date(b.createdAt)-new Date(a.createdAt); });
+    if(!rows.length){ document.getElementById("sessionsList").innerHTML="<div style=\"padding:14px;color:var(--muted)\">No sessions yet.</div>"; return; }
+    document.getElementById("sessionsList").innerHTML = rows.map(function(r){
+      var dt = new Date(r.createdAt).toLocaleString("en-PK",{timeZone:"Asia/Karachi"});
+      var gl = r.grade==="olevel"?"O Level":"Grade "+(r.sub||r.grade||"");
+      return "<div class=\"s-row\"><div><div class=\"s-name\">"+r.sname+" ("+r.sid+")</div><div class=\"s-id\">"+dt+" \u00b7 "+(r.subject||"")+(r.chapter?" \u00b7 "+r.chapter:"")+"</div></div><div class=\"s-id\">"+gl+" \u00b7 "+(r.imageCount||0)+" imgs</div></div>";
+    }).join("");
+  }catch(e){ document.getElementById("sessionsList").innerHTML="<div style=\"padding:14px;color:var(--muted)\">Error: "+e.message+"</div>"; }
+}
+async function loadApprovedStudents(){
+  if(!fbReady||!db){ document.getElementById("approvedList").innerHTML="<div style=\"padding:14px;color:var(--muted)\">Firebase not connected.</div>"; return; }
+  try{
+    var snap = await db.collection("approvedStudents").orderBy("addedAt","desc").get();
+    document.getElementById("approvedCount").textContent = snap.size + " students";
+    if(snap.empty){ document.getElementById("approvedList").innerHTML="<div style=\"padding:14px;color:var(--muted)\">No students yet.</div>"; return; }
+    var listEl = document.getElementById("approvedList");
+    listEl.innerHTML = "";
+    snap.docs.forEach(function(doc){
+      var d = doc.data();
+      var row = document.createElement("div"); row.className = "s-row";
+      var isActive = d.active !== false;
+      var badge = document.createElement("span");
+      badge.className = isActive ? "badge-on" : "badge-off";
+      badge.textContent = isActive ? "Active" : "Disabled";
+      var togBtn = document.createElement("button"); togBtn.className = "btn-tog";
+      togBtn.textContent = isActive ? "Disable" : "Enable";
+      togBtn.onclick = function(){ toggleStudent(d.studentId, isActive); };
+      var delBtn = document.createElement("button"); delBtn.className = "btn-del";
+      delBtn.textContent = "Remove";
+      delBtn.onclick = function(){ removeStudent(d.studentId, d.name); };
+      var info = document.createElement("div");
+      info.innerHTML = "<div class=\"s-name\">"+d.name+"</div><div class=\"s-id\">"+d.studentId+(d.class?" \u00b7 "+d.class:"")+"</div>";
+      var btns = document.createElement("div"); btns.className = "s-btns";
+      btns.appendChild(togBtn); btns.appendChild(delBtn);
+      row.appendChild(info); row.appendChild(badge); row.appendChild(btns);
+      listEl.appendChild(row);
+    });
+  }catch(e){ document.getElementById("approvedList").innerHTML="<div style=\"padding:14px;color:var(--muted)\">Error: "+e.message+"</div>"; }
+}
+async function addStudent(){
+  var idVal=document.getElementById("newId").value.trim().toUpperCase();
+  var nameVal=document.getElementById("newName").value.trim();
+  var classVal=document.getElementById("newClass").value.trim();
+  if(!idVal||idVal.length<2){ showAddMsg("Enter a valid Student ID.","err"); return; }
+  if(!nameVal){ showAddMsg("Enter the student name.","err"); return; }
+  if(!fbReady||!db){ showAddMsg("Firebase not connected.","err"); return; }
+  try{
+    var ex=await db.collection("approvedStudents").doc(idVal).get();
+    if(ex.exists){ showAddMsg("ID "+idVal+" already exists.","warn"); return; }
+    await db.collection("approvedStudents").doc(idVal).set({studentId:idVal,name:nameVal,class:classVal||"",active:true,addedAt:new Date().toISOString()});
+    showAddMsg(nameVal+" ("+idVal+") added!","ok");
+    document.getElementById("newId").value="";
+    document.getElementById("newName").value="";
+    document.getElementById("newClass").value="";
+    await loadApprovedStudents();
+  }catch(e){ showAddMsg("Error: "+e.message,"err"); }
+}
+function showAddMsg(text,type){
+  var el=document.getElementById("addMsg");
+  el.textContent=text; el.style.display="block";
+  el.style.background=type==="ok"?"#f0fff4":type==="warn"?"#fff8e7":"#fff5f5";
+  el.style.color=type==="ok"?"#2d6a4f":type==="warn"?"#c9943a":"#c0392b";
+  el.style.border="1px solid "+(type==="ok"?"#b7e4c7":type==="warn"?"#f5e0a0":"#f5c6c6");
+  setTimeout(function(){ el.style.display="none"; },4000);
+}
+async function toggleStudent(sid, current){
+  if(!fbReady||!db) return;
+  try{ await db.collection("approvedStudents").doc(sid).update({active:!current}); await loadApprovedStudents(); }
+  catch(e){ alert("Error: "+e.message); }
+}
+async function removeStudent(sid, name){
+  if(!confirm("Remove "+name+" ("+sid+")? They will no longer be able to log in.")) return;
+  if(!fbReady||!db) return;
+  try{ await db.collection("approvedStudents").doc(sid).delete(); await loadApprovedStudents(); }
+  catch(e){ alert("Error: "+e.message); }
+}
+
+initFirebase().then(function(){
+  document.getElementById("subGradeRow").style.display = "none";
+  var sid = lsGet("ld_sid");
+  var sname = lsGet("ld_sname");
+  if(sid && sname){
+    studentId = sid; studentName = sname;
+    startApp();
+  }
+});
+
+</script>
+</body>
+</html>
