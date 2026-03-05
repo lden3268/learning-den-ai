@@ -155,11 +155,6 @@ header{background:linear-gradient(135deg,#1e3a5f 0%,#2a5080 100%);padding:12px 4
 .difficulty-badge{display:inline-block;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;margin-left:8px;vertical-align:middle;}
 .difficulty-hard{background:#fff0f0;color:#c0392b;border:1px solid #f5c6c6;}
 .difficulty-med{background:#fff8e7;color:#c9943a;border:1px solid #f5e0a0;}
-.checklist-item{display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);}
-.checklist-item:last-child{border-bottom:none;}
-.checklist-check{width:20px;height:20px;border:2px solid var(--border);border-radius:5px;flex-shrink:0;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.2s;margin-top:1px;}
-.checklist-check.done{background:var(--navy);border-color:var(--navy);color:white;}
-.checklist-text{font-size:13px;line-height:1.6;color:var(--text);}
 .whatsapp-btn{padding:11px 22px;background:#25D366;color:white;border:none;border-radius:10px;font-family:"DM Sans",sans-serif;font-size:14px;font-weight:600;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;gap:8px;}
 .whatsapp-btn:hover{background:#1db954;}
 .sec-body .a{color:var(--text);margin-bottom:6px;display:block;padding-left:12px;}
@@ -905,7 +900,6 @@ function generatePDF(resultsData, studentId, grade, dateStr, subject, studentNam
       {title:'EXAM Q & A',         num:'3', content:item.qanda},
       {title:'FILL IN THE BLANKS', num:'4', content:item.fillblanks},
       {title:'ADDITIONAL NOTES',   num:'5', content:item.additional},
-      {title:'REVISION CHECKLIST', num:'6', content:item.checklist},
     ].forEach(s => writeSection(s.title, s.num, s.content||''));
 
     y += 6;
@@ -1013,13 +1007,6 @@ function buildPrompt(img, index, total){
   const difficultyNote = `
 After EXAM Q&A, mark each question with [EASY], [MEDIUM], or [HARD] based on how likely it is to be tricky in exams.`;
 
-  // Revision checklist instruction
-  const checklistNote = `
----REVISION CHECKLIST---
-Write 5-8 "I can..." statements the student should be able to say after studying this topic.
-Example: I can explain what an element is.
-Each on its own line, starting with "I can"`;
-
   let instructions = '';
 
   if(isLiterature){
@@ -1052,7 +1039,7 @@ Passage: "[quote from text]"
 Literary Devices - identify and explain 5 devices with quotes.
 ERQ (Extended Response): Give 2 essay questions with model answer outlines.
 CRQ (Comprehension Response): Give 3 comprehension questions with answers.
-${checklistNote}`;
+`;
     } else {
       instructions = `Generate ALL sections for this Grade ${selectedSubGrade} Literature/Story content:
 
@@ -1074,7 +1061,7 @@ Give ${isLowerPrimary ? '5' : '7'} fill in the blank questions.
 
 ---ADDITIONAL NOTES---
 ${isMiddle ? 'Identify 3 literary devices used. Give 5 short questions with answers.' : 'List 3 new vocabulary words from the passage with meanings.'}
-${checklistNote}`;
+`;
     }
   } else if(isLanguage || isUrdu){
     const lang = isUrdu ? 'Urdu' : 'English';
@@ -1100,7 +1087,7 @@ Give 10 fill in the blank exercises practising this rule.
 
 ---ADDITIONAL NOTES---
 PRACTICE EXERCISES: Write 15 numbered practice sentences where the student must apply this grammar rule. Vary difficulty from easy to hard.
-${checklistNote}`;
+`;
   } else if(isMaths){
     instructions = `Generate ALL sections for this ${isOLevel ? 'O Level' : 'Grade '+selectedSubGrade} Mathematics content:
 
@@ -1125,7 +1112,7 @@ Give 8 fill in the blank questions about formulas and definitions.
 ---ADDITIONAL NOTES---
 COMMON MISTAKES: List 3 common mistakes students make with this topic.
 MEMORY TIP: Give a helpful trick or mnemonic to remember the key formula/rule.
-${checklistNote}`;
+`;
   } else if(isScience){
     instructions = `Generate ALL sections for this ${isOLevel ? 'O Level' : 'Grade '+selectedSubGrade} ${selectedSubject} content:
 
@@ -1150,7 +1137,7 @@ Give 8-10 fill in the blank questions using key scientific terms.
 ---ADDITIONAL NOTES---
 KEY DEFINITIONS: List all scientific terms from this topic with clear definitions.
 ${isOLevel ? 'DIAGRAMS: Describe any important diagrams and what they show.\nFORMULAS: List all equations and formulas with units.' : 'REMEMBER: Give a fun memory trick for the hardest concept.'}
-${checklistNote}`;
+`;
   } else if(isIslamiyat){
     instructions = `Generate ALL sections for this ${isOLevel ? 'O Level' : 'Grade '+selectedSubGrade} Islamiyat content:
 
@@ -1175,7 +1162,7 @@ Give 8 fill in the blank questions.
 ---ADDITIONAL NOTES---
 KEY ARABIC TERMS: List important Arabic words/phrases with meanings and transliteration.
 ${isOLevel ? 'SIGNIFICANCE: Explain the importance of the events/teachings for Muslims today.' : ''}
-${checklistNote}`;
+`;
   } else if(isHumSoc){
     instructions = `Generate ALL sections for this ${isOLevel ? 'O Level' : 'Grade '+selectedSubGrade} ${selectedSubject} content:
 
@@ -1199,7 +1186,7 @@ Give 8-10 fill in the blank questions on key facts and dates.
 ---ADDITIONAL NOTES---
 KEY DATES/FACTS: Create a quick reference timeline or fact list.
 ${isOLevel ? 'ESSAY TIPS: Give 2 essay question outlines with key points to include.' : 'MEMORY TIP: A trick to remember the most important facts.'}
-${checklistNote}`;
+`;
   } else {
     // Generic fallback
     instructions = `Generate ALL sections for this ${isOLevel ? 'O Level' : 'Grade '+selectedSubGrade} ${selectedSubject||'subject'} content:
@@ -1222,7 +1209,7 @@ Give 8-10 fill in the blank questions.
 
 ---ADDITIONAL NOTES---
 Include key definitions, important facts, and a memory tip.
-${checklistNote}`;
+`;
   }
 
   return `You are an expert, caring teacher at Learning DEN academy in Karachi, Pakistan. ${chapterCtx}
@@ -1260,7 +1247,6 @@ function parseResult(text){
     qanda:     qa?qa[1].trim():'',
     fillblanks:fb?fb[1].trim():'',
     additional:add?add[1].trim():'',
-    checklist: ch?ch[1].trim():''
   };
 }
 
@@ -1291,17 +1277,7 @@ function formatResultHtml(parsed){
   html+=sec('❓','Exam Q&A',parsed.qanda);
   html+=sec('✏️','Fill in the Blanks',parsed.fillblanks);
   html+=sec('📚','Additional Notes',parsed.additional);
-  if(parsed.checklist && parsed.checklist.trim()){
-    const items = cleanText(parsed.checklist).split('\n').filter(l=>l.trim().toLowerCase().startsWith('i can'));
-    if(items.length){
-      let cl = '<div class="section-wrap"><div class="sec-head"><span class="sec-icon">✅</span><span class="sec-title">Revision Checklist</span></div><div class="sec-body" style="padding:14px 20px;">';
-      items.forEach((item,idx)=>{
-        cl += `<div class="checklist-item"><div class="checklist-check" onclick="this.classList.toggle('done');this.innerHTML=this.classList.contains('done')?'✓':''"></div><div class="checklist-text">${item.trim()}</div></div>`;
-      });
-      cl += '</div></div>';
-      html += cl;
-    }
-  }
+
   return html;
 }
 
@@ -1508,3 +1484,4 @@ window.addEventListener('DOMContentLoaded',()=>{
 </script>
 </body>
 </html>await loadApprovedStudents();
+  
